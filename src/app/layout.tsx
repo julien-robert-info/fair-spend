@@ -5,7 +5,7 @@ import theme from '@/theme'
 
 export const metadata: Metadata = {
 	title: 'Fair Spend',
-	description: 'Share your household expenses fairly',
+	description: 'Partagez vos dépenses équitablement avec FairSpend',
 }
 
 export default function RootLayout({
