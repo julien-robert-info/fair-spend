@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "dbview": "prisma studio",
-    "migrate": "prisma migrate dev"
+    "db:view": "prisma studio",
+    "db:migrate": "prisma migrate dev",
+    "db:format": "prisma format"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.0.0",
@@ -19,6 +20,7 @@
     "@mui/material-nextjs": "^5.15.11",
     "@prisma/client": "^5.13.0",
     "next": "14.2.3",
+    "next-auth": "^4.24.7",
     "react": "^18",
     "react-dom": "^18"
   },
