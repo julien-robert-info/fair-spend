@@ -19,6 +19,27 @@ const LinkBehaviour = React.forwardRef<HTMLAnchorElement, NextLinkProps>(
 )
 
 const theme = createTheme({
+	palette: {
+		mode: 'light',
+		primary: {
+			main: '#59c3f3',
+		},
+		secondary: {
+			main: '#eca9b6',
+		},
+		error: {
+			main: '#e49c9c',
+		},
+		warning: {
+			main: '#efd9a4',
+		},
+		info: {
+			main: '#59c3f3',
+		},
+		success: {
+			main: '#a9d4ac',
+		},
+	},
 	typography: {
 		fontFamily: roboto.style.fontFamily,
 	},
