@@ -6,8 +6,7 @@ import {
 import { NextAuthOptions, getServerSession } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import prisma from './prisma'
-import { PrismaAdapter } from '@auth/prisma-adapter'
-import { Adapter } from 'next-auth/adapters'
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
 
 export const authConfig = {
 	providers: [
@@ -26,7 +25,7 @@ export const authConfig = {
 			},
 		}),
 	],
-	adapter: PrismaAdapter(prisma) as Adapter,
+	adapter: PrismaAdapter(prisma),
 } satisfies NextAuthOptions
 
 export const auth = async (
