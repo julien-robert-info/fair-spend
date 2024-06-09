@@ -1,8 +1,7 @@
 'use client'
-
 import { Button, Link, Typography } from '@mui/material'
 
-export const Home = () => {
+const Home = () => {
 	return (
 		<>
 			<Typography variant='h4'>
@@ -14,3 +13,5 @@ export const Home = () => {
 		</>
 	)
 }
+
+export default Home

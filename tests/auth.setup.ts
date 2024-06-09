@@ -53,6 +53,10 @@ setup('Authenticate Bob', async () => {
 		},
 		update: {
 			sessions: {
+				create: {
+					expires: new Date(now.getFullYear(), now.getMonth() + 1, 0),
+					sessionToken: bobSessionToken,
+				},
 				update: {
 					where: {
 						sessionToken: bobSessionToken,
@@ -122,9 +126,13 @@ setup('Authenticate Alice', async () => {
 		},
 		update: {
 			sessions: {
+				create: {
+					expires: new Date(now.getFullYear(), now.getMonth() + 1, 0),
+					sessionToken: aliceSessionToken,
+				},
 				update: {
 					where: {
-						sessionToken: bobSessionToken,
+						sessionToken: aliceSessionToken,
 					},
 					data: {
 						expires: new Date(

@@ -15,10 +15,22 @@ test.describe('Homepage', () => {
 		await context.close()
 	})
 
-	test('Show Dashboard if logged in', async ({ page }) => {
+	test('Show Header if logged in', async ({ page }) => {
 		await page.goto('/')
-		page.waitForURL('/')
 
 		await expect(page.getByText('Dashboard')).toBeVisible()
+		await expect(page.getByLabel('Account')).toBeVisible()
 	})
+
+	// test('Can log out', async ({ page }) => {
+	// 	await page.goto('/')
+
+	// 	await page.getByLabel('Account').click()
+	// 	await page.getByRole('menuitem', { name: /Logout/ }).click()
+	// 	await page.waitForURL('/')
+
+	// 	await expect(
+	// 		page.getByRole('button', { name: /Commencer\/Se connecter/ })
+	// 	).toBeVisible()
+	// })
 })

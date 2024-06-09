@@ -1,11 +1,16 @@
 import Dashboard from '@/components/Dashboard'
+import Home from '@/components/Home'
 import { auth } from '@/utils/auth'
 import { Box } from '@mui/material'
 
-const Home = async () => {
+const Page = async () => {
 	const session = await auth()
 
-	return <Box component='main'>{session ? <Dashboard /> : <Home />}</Box>
+	return (
+		<Box component='main'>
+			{session !== null ? <Dashboard /> : <Home />}
+		</Box>
+	)
 }
 
-export default Home
+export default Page
