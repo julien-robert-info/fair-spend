@@ -3,7 +3,12 @@ import {
 	NextApiRequest,
 	NextApiResponse,
 } from 'next'
-import { NextAuthOptions, getServerSession } from 'next-auth'
+import {
+	DefaultSession,
+	NextAuthOptions,
+	Session,
+	getServerSession,
+} from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import prisma from './prisma'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
@@ -17,8 +22,6 @@ export const authConfig = {
 				return {
 					id: profile.sub,
 					name: profile.name,
-					firstname: profile.given_name,
-					lastname: profile.family_name,
 					email: profile.email,
 					image: profile.picture,
 				}
@@ -33,8 +36,19 @@ export const auth = async (
 		| [GetServerSidePropsContext['req'], GetServerSidePropsContext['res']]
 		| [NextApiRequest, NextApiResponse]
 		| []
-) => {
+): Promise<Session | null> => {
 	'use server'
 
 	return getServerSession(...args, authConfig)
+}
+
+export const authOrError = async (): Promise<DefaultSession['user']> => {
+	'use server'
+	const session = await auth()
+
+	if (!session?.user) {
+		throw new Error('Unauthorized')
+	}
+
+	return session.user
 }

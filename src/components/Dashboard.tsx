@@ -1,13 +1,15 @@
-import { auth } from '@/utils/auth'
+import { Box } from '@mui/material'
+import GroupDashboard from './dashboard/GroupDashboard'
+import { getGroups } from '@/utils/actions/group'
 
 const Dashboard = async () => {
-	const session = await auth()
+	const groups = await getGroups()
 
-	if (!session) {
-		return
-	}
-
-	return 'Dashboard'
+	return (
+		<Box>
+			<GroupDashboard groups={groups} />
+		</Box>
+	)
 }
 
 export default Dashboard
