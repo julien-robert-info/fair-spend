@@ -3,7 +3,7 @@ import React from 'react'
 import NextLink, { LinkProps as NextLinkProps } from 'next/link'
 import { LinkProps as MuiLinkProps } from '@mui/material/Link'
 import { Roboto } from 'next/font/google'
-import { createTheme } from '@mui/material/styles'
+import { Shadows, createTheme } from '@mui/material/styles'
 
 const roboto = Roboto({
 	weight: ['300', '400', '500', '700'],
@@ -22,27 +22,31 @@ const theme = createTheme({
 	palette: {
 		mode: 'light',
 		primary: {
-			main: '#59c3f3',
+			main: '#99c1de',
 		},
 		secondary: {
-			main: '#eca9b6',
+			main: '#c5dedd',
 		},
 		error: {
 			main: '#e49c9c',
 		},
 		warning: {
-			main: '#efd9a4',
+			main: '#fbd0ab',
 		},
 		info: {
-			main: '#59c3f3',
+			main: '#99c1de',
 		},
 		success: {
-			main: '#a9d4ac',
+			main: '#aec9c9',
+		},
+		background: {
+			default: '#f0efeb',
 		},
 	},
 	typography: {
 		fontFamily: roboto.style.fontFamily,
 	},
+	shadows: Array(25).fill('none') as Shadows,
 	components: {
 		MuiLink: {
 			defaultProps: {
