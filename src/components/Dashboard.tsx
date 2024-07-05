@@ -1,6 +1,6 @@
 import { Box } from '@mui/material'
 import GroupDashboard from './dashboard/GroupDashboard'
-import { getGroups } from '@/utils/actions/group'
+import { getGroups } from '@/actions/group'
 
 const Dashboard = async () => {
 	const groups = await getGroups()
