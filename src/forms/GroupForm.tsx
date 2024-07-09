@@ -5,13 +5,11 @@ import {
 	Box,
 	Button,
 	FormControl,
-	Hidden,
 	InputLabel,
 	MenuItem,
 	Select,
 	SelectChangeEvent,
 	TextField,
-	Typography,
 } from '@mui/material'
 import { ShareMode } from '@prisma/client'
 import { upsertGroup } from '@/actions/group'
@@ -41,7 +39,6 @@ export const GroupForm = ({
 	}
 
 	React.useEffect(() => {
-		console.log(state)
 		if (state.message === 'success' && initialValues.onSuccess) {
 			initialValues.onSuccess()
 		}
@@ -56,15 +53,11 @@ export const GroupForm = ({
 				display: 'flex',
 				flexDirection: 'column',
 				gap: 1,
-				px: 2,
-				pb: 2,
 			}}
 		>
-			{state.message &&
-				state.message !== '' &&
-				state.message !== 'success' && (
-					<Alert severity='error'>{state.message}</Alert>
-				)}
+			{state.message !== '' && state.message !== 'success' && (
+				<Alert severity='error'>{state.message}</Alert>
+			)}
 			<TextField
 				name='id'
 				value={initialValues.id}
@@ -72,7 +65,7 @@ export const GroupForm = ({
 			/>
 			<TextField
 				name='name'
-				label='nom'
+				label='Nom'
 				variant='standard'
 				required={true}
 				defaultValue={initialValues.name}
@@ -83,7 +76,6 @@ export const GroupForm = ({
 					labelId='mode-label'
 					name='shareMode'
 					value={mode}
-					label='Mode'
 					onChange={handleChange}
 					required={true}
 				>

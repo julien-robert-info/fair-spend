@@ -14,6 +14,7 @@ import { signOut } from 'next-auth/react'
 import HeaderTitle from './HeaderTitle'
 import { DefaultSession } from 'next-auth'
 import { stringAvatar } from '@/utils/string'
+import UserAvatar from './UserAvatar'
 
 const Header = ({ user }: { user: DefaultSession['user'] }) => {
 	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
@@ -44,11 +45,9 @@ const Header = ({ user }: { user: DefaultSession['user'] }) => {
 						onClick={handleMenu}
 						color='inherit'
 					>
-						{user?.image ? (
-							<Avatar src={user.image} />
-						) : (
-							<Avatar {...stringAvatar(user?.name!)} />
-						)}
+						<UserAvatar
+							user={{ name: user?.name!, image: user?.image! }}
+						/>
 					</IconButton>
 					<Menu
 						id='menu-appbar'

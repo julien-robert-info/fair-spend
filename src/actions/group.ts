@@ -1,11 +1,17 @@
 'use server'
-import { Group, Member, Prisma, ShareMode } from '@prisma/client'
+import { Group, Prisma, ShareMode } from '@prisma/client'
 import prisma from '@/utils/prisma'
 import { authOrError } from '@/utils/auth'
 import { revalidatePath } from 'next/cache'
 
+export type UserDetails = {
+	name: string | null
+	email: string
+	image: string | null
+}
+
 export type GroupDetails = Omit<Group, 'ownerId'> & {
-	members: { user: { name: string | null; image: string | null } }[]
+	members: { user: UserDetails }[]
 	owner: { email: string }
 	isOwner: boolean
 }
@@ -20,7 +26,10 @@ export const getGroups = async (): Promise<GroupDetails[]> => {
 			shareMode: true,
 			owner: { select: { email: true } },
 			members: {
-				select: { user: { select: { name: true, image: true } } },
+				select: {
+					user: { select: { name: true, image: true, email: true } },
+				},
+				where: { user: { email: { not: user?.email! } } },
 			},
 		},
 		where: {
@@ -35,29 +44,29 @@ export const getGroups = async (): Promise<GroupDetails[]> => {
 
 export const upsertGroup = async (prevState: any, formData: FormData) => {
 	const user = await authOrError()
-	console.log(formData)
+
+	const id = formData.get('id') as string
+	const name = formData.get('name') as string
+	const shareMode = formData.get('shareMode') as ShareMode
 
 	try {
 		await prisma.group.upsert({
 			create: {
-				name: formData.get('name') as string,
-				shareMode: formData.get('shareMode') as ShareMode,
+				name: name,
+				shareMode: shareMode,
 				owner: { connect: { email: user?.email! } },
 				members: {
 					create: { user: { connect: { email: user?.email! } } },
 				},
 			},
 			update: {
-				name: formData.get('name') as string,
-				shareMode: formData.get('shareMode') as ShareMode,
+				name: name,
+				shareMode: shareMode,
 			},
 			where: {
-				id: formData.get('id') as string,
+				id: id,
 			},
 		})
-		revalidatePath('/')
-
-		return { message: 'success' }
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
 			if (error.code === 'P2002') {
@@ -66,6 +75,9 @@ export const upsertGroup = async (prevState: any, formData: FormData) => {
 		}
 		throw error
 	}
+	revalidatePath('/')
+
+	return { message: 'success' }
 }
 
 export const deleteGroup = async (id: string) => {
@@ -83,7 +95,8 @@ export const deleteGroup = async (id: string) => {
 
 		if (group.members.length > 2) {
 			return {
-				errors: 'Veuillez tranférer la propriété du group à un autre membre',
+				message:
+					'Veuillez tranférer la propriété du group à un autre membre',
 			}
 		}
 
@@ -92,11 +105,11 @@ export const deleteGroup = async (id: string) => {
 		})
 		revalidatePath('/')
 
-		return { errors: undefined }
+	return { message: 'success' }
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
 			if (error.code === 'P2025') {
-				return { errors: 'Groupe non trouvé' }
+				return { message: 'Groupe non trouvé' }
 			}
 		}
 		throw error

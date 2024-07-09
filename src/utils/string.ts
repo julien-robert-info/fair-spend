@@ -20,6 +20,7 @@ const stringToColor = (string: string) => {
 
 export const stringAvatar = (name: string) => {
 	return {
+		alt: name,
 		sx: {
 			bgcolor: stringToColor(name),
 		},
