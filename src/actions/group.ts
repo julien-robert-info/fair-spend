@@ -103,9 +103,6 @@ export const deleteGroup = async (id: string) => {
 		await prisma.group.delete({
 			where: { id: id },
 		})
-		revalidatePath('/')
-
-	return { message: 'success' }
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
 			if (error.code === 'P2025') {
@@ -114,4 +111,144 @@ export const deleteGroup = async (id: string) => {
 		}
 		throw error
 	}
+	revalidatePath('/')
+
+	return { message: 'success' }
+}
+
+export const joinGroup = async (id: string) => {
+	const user = await authOrError()
+
+	try {
+		const group = await prisma.group.findUniqueOrThrow({
+			select: {
+				members: {
+					select: {
+						user: {
+							select: { email: true },
+						},
+					},
+				},
+			},
+			where: { id: id },
+		})
+
+		const IsMember =
+			group.members.findIndex(
+				(member) => member.user.email === user?.email
+			) !== -1
+		if (IsMember) {
+			return { message: 'Vous êtes déjà membre du group' }
+		}
+
+		await prisma.member.create({
+			data: { groupId: id, userEmail: user?.email! },
+		})
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			if (error.code === 'P2025') {
+				return { message: 'Groupe non trouvé' }
+			}
+		}
+		throw error
+	}
+	revalidatePath('/')
+
+	return { message: 'success' }
+}
+
+export const leaveGroup = async (id: string) => {
+	const user = await authOrError()
+
+	try {
+		const group = await prisma.group.findUniqueOrThrow({
+			select: {
+				members: {
+					select: {
+						user: {
+							select: { email: true },
+						},
+					},
+				},
+			},
+			where: { id: id },
+		})
+
+		const IsMember =
+			group.members.findIndex(
+				(member) => member.user.email === user?.email
+			) !== -1
+		if (!IsMember) {
+			return { message: "Vous n'êtes pas membre du group" }
+		}
+
+		await prisma.member.delete({
+			where: {
+				groupId_userEmail: { groupId: id, userEmail: user?.email! },
+			},
+		})
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			if (error.code === 'P2025') {
+				return { message: 'Groupe non trouvé' }
+			}
+		}
+		throw error
+	}
+	revalidatePath('/')
+
+	return { message: 'success' }
+}
+
+export const transferGroup = async (prevState: any, formData: FormData) => {
+	const user = await authOrError()
+
+	const id = formData.get('id') as string
+	const newOwner = formData.get('newOwner') as string
+
+	try {
+		const group = await prisma.group.findUniqueOrThrow({
+			select: {
+				owner: { select: { email: true } },
+				members: {
+					select: {
+						user: {
+							select: { email: true },
+						},
+					},
+				},
+			},
+			where: { id: id },
+		})
+
+		if (group.owner.email !== user?.email) {
+			return { message: "Vous n'êtes pas propriétaire du group" }
+		}
+
+		const IsMember =
+			group.members.findIndex(
+				(member) => member.user.email === newOwner
+			) !== -1
+		if (!IsMember) {
+			return { message: "La personne choisie n'est pas membre du group" }
+		}
+
+		await prisma.group.update({
+			data: {
+				owner: { connect: { email: newOwner } },
+			},
+			where: {
+				id: id,
+			},
+		})
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			if (error.code === 'P2025') {
+				return { message: 'Groupe non trouvé' }
+			}
+		}
+		throw error
+	}
+
+	return { message: 'success' }
 }
