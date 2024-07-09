@@ -94,6 +94,7 @@ model Group {
   ownerId String
 
   members Member[]
+  Invite  Invite[]
 
   @@unique([name, ownerId])
 }
@@ -106,4 +107,13 @@ model Member {
   userEmail String
 
   @@unique([groupId, userEmail])
+}
+
+model Invite {
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId String
+
+  email String
+
+  @@unique([email, groupId])
 }
