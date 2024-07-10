@@ -120,7 +120,7 @@ const GroupCard = ({
 							>
 								<EditIcon />
 							</IconButton>
-							{group.members.length > 1 ? (
+							{group.members.length > 0 ? (
 								<IconButton
 									aria-label='leave'
 									onClick={() => handleOpenForm('transfer')}
