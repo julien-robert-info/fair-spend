@@ -104,7 +104,7 @@ test.describe('Groups Dashboard', () => {
 		// 	.getByRole('link', { name: 'here' })
 		// 	.click()
 
-		// await alicePage.goto('/')
+		await alicePage.goto('/')
 
 		await expect(
 			alicePage.getByRole('button', { name: 'accept' })
