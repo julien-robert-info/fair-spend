@@ -25,7 +25,7 @@ const GroupCardContent = ({
 			</Typography>
 
 			{group.members.length > 0 ? (
-				<AvatarGroup max={3}>
+				<AvatarGroup max={3} sx={{ justifyContent: 'center' }}>
 					{group.members.map((member) => (
 						<UserAvatar
 							key={`${group.id}-${member.user.name}`}
@@ -34,7 +34,10 @@ const GroupCardContent = ({
 					))}
 				</AvatarGroup>
 			) : (
-				<Typography variant='body1' component='div'>
+				<Typography
+					variant='body1'
+					sx={{ textAlign: 'center', lineHeight: '2.7em' }}
+				>
 					Invitez des membres
 				</Typography>
 			)}

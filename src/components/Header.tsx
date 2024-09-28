@@ -3,7 +3,6 @@ import React from 'react'
 import {
 	AppBar,
 	Divider,
-	Avatar,
 	Box,
 	IconButton,
 	Menu,
@@ -13,7 +12,6 @@ import {
 import { signOut } from 'next-auth/react'
 import HeaderTitle from './HeaderTitle'
 import { DefaultSession } from 'next-auth'
-import { stringAvatar } from '@/utils/string'
 import UserAvatar from './UserAvatar'
 
 const Header = ({ user }: { user: DefaultSession['user'] }) => {
@@ -42,6 +40,7 @@ const Header = ({ user }: { user: DefaultSession['user'] }) => {
 						aria-label='account'
 						aria-controls='menu-appbar'
 						aria-haspopup='true'
+						aria-expanded={Boolean(anchorEl) ? 'true' : undefined}
 						onClick={handleMenu}
 						color='inherit'
 					>
@@ -54,12 +53,12 @@ const Header = ({ user }: { user: DefaultSession['user'] }) => {
 						anchorEl={anchorEl}
 						anchorOrigin={{
 							vertical: 'bottom',
-							horizontal: 'left',
+							horizontal: 'right',
 						}}
 						keepMounted
 						transformOrigin={{
-							vertical: 'bottom',
-							horizontal: 'left',
+							vertical: 'top',
+							horizontal: 'right',
 						}}
 						open={Boolean(anchorEl)}
 						onClose={handleClose}

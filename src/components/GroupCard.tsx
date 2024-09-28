@@ -3,7 +3,6 @@ import React, { ReactNode } from 'react'
 import { deleteGroup, GroupDetails, leaveGroup } from '@/actions/group'
 import {
 	Card,
-	CardActionArea,
 	CardActions,
 	IconButton,
 	Button,
@@ -14,6 +13,7 @@ import {
 	DialogTitle,
 	Alert,
 	CardProps,
+	Grid,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
@@ -102,48 +102,62 @@ const GroupCard = ({
 	return (
 		<>
 			<Card {...props}>
-				<CardActionArea>
-					<GroupCardContent group={group} />
-				</CardActionArea>
+				<GroupCardContent group={group} />
 				<CardActions disableSpacing>
-					<IconButton
-						aria-label='share'
-						onClick={() => handleOpenForm('invite')}
-					>
-						<ShareIcon />
-					</IconButton>
-					{group.isOwner ? (
-						<>
+					<Grid container justifyContent='space-around'>
+						<Grid item>
 							<IconButton
-								aria-label='edit'
-								onClick={() => edit(group.id)}
+								aria-label='share'
+								onClick={() => handleOpenForm('invite')}
 							>
-								<EditIcon />
+								<ShareIcon />
 							</IconButton>
-							{group.members.length > 0 ? (
+						</Grid>
+						{group.isOwner ? (
+							<>
+								<Grid item>
+									<IconButton
+										aria-label='edit'
+										onClick={() => edit(group.id)}
+									>
+										<EditIcon />
+									</IconButton>
+								</Grid>
+								{group.members.length > 0 ? (
+									<Grid item>
+										<IconButton
+											aria-label='leave'
+											onClick={() =>
+												handleOpenForm('transfer')
+											}
+										>
+											<LogoutIcon />
+										</IconButton>
+									</Grid>
+								) : (
+									<Grid item>
+										<IconButton
+											aria-label='delete'
+											onClick={() =>
+												handleOpenConfirm('delete')
+											}
+										>
+											<DeleteIcon />
+										</IconButton>
+									</Grid>
+								)}
+							</>
+						) : (
+							<Grid item>
 								<IconButton
 									aria-label='leave'
-									onClick={() => handleOpenForm('transfer')}
+									onClick={() => handleOpenConfirm('leave')}
 								>
 									<LogoutIcon />
 								</IconButton>
-							) : (
-								<IconButton
-									aria-label='delete'
-									onClick={() => handleOpenConfirm('delete')}
-								>
-									<DeleteIcon />
-								</IconButton>
-							)}
-						</>
-					) : (
-						<IconButton
-							aria-label='leave'
-							onClick={() => handleOpenConfirm('leave')}
-						>
-							<LogoutIcon />
-						</IconButton>
-					)}
+							</Grid>
+						)}
+					</Grid>
 				</CardActions>
 			</Card>
 			<Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>

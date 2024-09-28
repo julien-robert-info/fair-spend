@@ -11,7 +11,7 @@ import {
 	SelectChangeEvent,
 	TextField,
 } from '@mui/material'
-import { ShareMode } from '@prisma/client'
+import { Group, ShareMode } from '@prisma/client'
 import { upsertGroup } from '@/actions/group'
 import { useFormState } from 'react-dom'
 
@@ -19,7 +19,7 @@ export type GroupFormFields = {
 	id?: string
 	name?: string
 	shareMode?: ShareMode
-	onSuccess?: () => void
+	onSuccess?: (group?: Group) => void
 }
 
 export const GroupForm = ({
@@ -40,7 +40,7 @@ export const GroupForm = ({
 
 	React.useEffect(() => {
 		if (state.message === 'success' && initialValues.onSuccess) {
-			initialValues.onSuccess()
+			initialValues.onSuccess(state.result)
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [state])

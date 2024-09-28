@@ -14,9 +14,14 @@ test.describe('Groups Dashboard', () => {
 		})
 	})
 
-	test('can create, update and delete a group', async ({ page }) => {
+	test('can create, update and delete a group', async ({
+		page,
+		isMobile,
+	}) => {
 		await page.goto('/')
-		await page.getByRole('button', { name: 'Nouveau groupe' }).click()
+		await page
+			.getByRole('button', { name: isMobile ? 'add' : 'Nouveau groupe' })
+			.click()
 
 		const nameFormField = page.getByLabel('nom *')
 		const shareModeFormField = page.getByLabel('Mode de répartition')
@@ -30,114 +35,150 @@ test.describe('Groups Dashboard', () => {
 		await page.getByRole('option', { name: 'équitable' }).click()
 		await page.getByRole('button', { name: 'enregistrer' }).click()
 
-		await expect(
-			page.getByRole('button', { name: 'testGroup' })
-		).toBeVisible()
+		let card = page
+			.locator('.MuiCard-root')
+			.filter({ has: page.getByText('testGroup') })
 
-		// update
-		await page.getByRole('button', { name: 'edit' }).click()
+		await expect(card).toBeVisible()
+
+		await card.getByRole('button', { name: 'edit' }).click()
 		await nameFormField.fill('myGroup')
 		await page.getByRole('button', { name: 'enregistrer' }).click()
 
-		await expect(
-			page.getByRole('button', { name: 'myGroup' })
-		).toBeVisible()
+		card = page
+			.locator('.MuiCard-root')
+			.filter({ has: page.getByText('myGroup') })
+
+		await expect(card).toBeVisible()
 
 		// delete
-		await page.getByRole('button', { name: 'delete' }).click()
+		await card.getByRole('button', { name: 'delete' }).click()
+		await page.getByRole('button', { name: 'oui' }).click()
 
-		await expect(page.getByRole('button', { name: 'myGroup' })).toBeHidden()
+		await expect(card).toBeHidden()
 	})
 
 	test('can invite people in a group, transfert ownership and leave', async ({
 		page,
 		browser,
+		isMobile,
 	}) => {
 		await page.goto('/')
 
 		// create
-		await page.getByRole('button', { name: 'Nouveau groupe' }).click()
+		await page
+			.getByRole('button', { name: isMobile ? 'add' : 'Nouveau groupe' })
+			.click()
 		await page.getByLabel('nom *').fill('testGroup')
 		await page.getByLabel('Mode de répartition').click()
 		await page.getByRole('option', { name: 'équitable' }).click()
 		await page.getByRole('button', { name: 'enregistrer' }).click()
 
-		await expect(
-			page.getByRole('button', { name: 'testGroup' })
-		).toBeVisible()
+		let card = page
+			.locator('.MuiCard-root')
+			.filter({ has: page.getByText('testGroup') })
+
+		await expect(card).toBeVisible()
 
 		// share
-		await page.getByRole('button', { name: 'share' }).click()
+		await card.getByRole('button', { name: 'share' }).click()
 
 		await expect(page.getByLabel('Email')).toBeVisible()
 
-		await page.getByLabel('Email').fill('alice@test.com')
+		await page
+			.getByLabel('Email')
+			.fill(isMobile ? 'bob@test.com' : 'alice@test.com')
 		await page.getByRole('button', { name: 'Inviter' }).click()
 
-		const aliceContext = await browser.newContext({
-			storageState: 'playwright/.auth/alice.json',
+		const secondUserContext = await browser.newContext({
+			storageState: isMobile
+				? 'playwright/.auth/bob.json'
+				: 'playwright/.auth/alice.json',
 		})
-		const alicePage = await aliceContext.newPage()
+		const secondUserPage = await secondUserContext.newPage()
 
 		// with webmail
-		// await alicePage.goto('http://localhost:8081')
-		// await alicePage.getByRole('link', { name: 'Refresh' }).click()
+		// await secondUserPage.goto('http://localhost:8081')
+		// await secondUserPage.getByRole('link', { name: 'Refresh' }).click()
 
 		// await expect(
-		// 	alicePage.getByRole('link', { name: 'You have been invited' })
+		// 	secondUserPage.getByRole('link', { name: 'You have been invited' })
 		// ).toBeVisible()
 
-		// await alicePage
+		// await secondUserPage
 		// 	.getByRole('link', { name: 'You have been invited' })
 		// 	.click()
 
 		// await expect(
-		// 	alicePage
+		// 	secondUserPage
 		// 		.frameLocator('iframe')
 		// 		.first()
 		// 		.getByRole('link', { name: 'here' })
 		// ).toBeVisible()
 
-		// await alicePage
+		// await secondUserPage
 		// 	.frameLocator('iframe')
 		// 	.first()
 		// 	.getByRole('link', { name: 'here' })
 		// 	.click()
 
-		await alicePage.goto('/')
+		await secondUserPage.goto('/')
 
 		await expect(
-			alicePage.getByRole('button', { name: 'accept' })
+			secondUserPage.getByRole('button', { name: 'accept' })
 		).toBeVisible()
 
 		await expect(
-			alicePage.getByRole('button', { name: 'decline' })
+			secondUserPage.getByRole('button', { name: 'decline' })
 		).toBeVisible()
 
-		await alicePage.getByRole('button', { name: 'accept' }).click()
+		await secondUserPage.getByRole('button', { name: 'accept' }).click()
 
-		await expect(
-			alicePage.getByRole('button', { name: 'testGroup B' })
-		).toBeVisible()
+		let secondUserCard = secondUserPage
+			.locator('.MuiCard-root')
+			.filter({ has: secondUserPage.getByText('testGroup') })
+		await expect(secondUserCard).toBeVisible()
 
 		// leave
 		await page.reload()
 
-		await expect(page.getByRole('button', { name: 'leave' })).toBeVisible()
+		if (isMobile) {
+			await expect(async () => {
+				page.getByRole('button', {
+					name: 'Next',
+				}).click()
+				await expect(card).toBeVisible()
+			}).toPass()
+		}
 
-		await page.getByRole('button', { name: 'leave' }).click()
+		await expect(card.getByRole('button', { name: 'leave' })).toBeVisible()
+
+		await card.getByRole('button', { name: 'leave' }).click()
 
 		await expect(page.getByLabel('Nouveau propriétaire')).toBeVisible()
 		await page.getByLabel('Nouveau propriétaire').click()
-		await page.getByRole('option', { name: 'Alice' }).click()
+		await page
+			.getByRole('option', { name: isMobile ? 'Bob' : 'Alice' })
+			.click()
 		await page.getByRole('button', { name: 'Transférer' }).click()
 
-		await expect(page.getByRole('button', { name: 'myGroup' })).toBeHidden()
+		await expect(card).toBeHidden()
 
-		await alicePage.reload()
+		await secondUserPage.reload()
+
+		if (isMobile) {
+			await expect(async () => {
+				secondUserPage
+					.getByRole('button', {
+						name: 'Next',
+					})
+					.click()
+				await expect(secondUserCard).toBeVisible()
+			}).toPass()
+		}
 
 		await expect(
-			alicePage.getByRole('button', { name: 'edit' })
+			secondUserCard.getByRole('button', { name: 'edit' })
 		).toBeVisible()
 	})
 })

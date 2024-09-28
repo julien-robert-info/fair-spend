@@ -57,7 +57,7 @@ export default defineConfig({
 			name: 'Mobile Chrome',
 			use: {
 				...devices['Pixel 5'],
-				storageState: 'playwright/.auth/bob.json',
+				storageState: 'playwright/.auth/alice.json',
 			},
 		},
 

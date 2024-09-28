@@ -48,9 +48,10 @@ export const upsertGroup = async (prevState: any, formData: FormData) => {
 	const id = formData.get('id') as string
 	const name = formData.get('name') as string
 	const shareMode = formData.get('shareMode') as ShareMode
+	let group
 
 	try {
-		await prisma.group.upsert({
+		group = await prisma.group.upsert({
 			create: {
 				name: name,
 				shareMode: shareMode,
@@ -77,7 +78,7 @@ export const upsertGroup = async (prevState: any, formData: FormData) => {
 	}
 	revalidatePath('/')
 
-	return { message: 'success' }
+	return { message: 'success', result: group }
 }
 
 export const deleteGroup = async (id: string) => {
