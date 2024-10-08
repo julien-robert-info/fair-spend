@@ -14,7 +14,6 @@ type Cookie = Parameters<BrowserContext['addCookies']>[0][0]
 const makePath = (filePath: string) => {
 	if (!fs.existsSync(filePath)) {
 		const ret = fs.mkdirSync(path.dirname(filePath), { recursive: true })
-		console.log('existsSync', fs.existsSync(bobAuthFile), ret)
 	}
 }
 
