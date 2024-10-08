@@ -1,4 +1,6 @@
 import { test as setup, BrowserContext, chromium } from '@playwright/test'
+import fs from 'fs'
+import path from 'path'
 import prisma from '@/utils/prisma'
 
 const bobAuthFile = 'playwright/.auth/bob.json'
@@ -9,7 +11,18 @@ const aliceSessionToken = '04456e41-ec3b-4edf-92c1-48c14e57cacd2'
 
 type Cookie = Parameters<BrowserContext['addCookies']>[0][0]
 
+const makePath = (filePath: string) => {
+	if (!fs.existsSync(filePath)) {
+		const ret = fs.mkdirSync(path.dirname(filePath), { recursive: true })
+		console.log('existsSync', fs.existsSync(bobAuthFile), ret)
+	}
+}
+
 setup('Authenticate Bob', async () => {
+	if (!fs.existsSync(bobAuthFile)) {
+		makePath(bobAuthFile)
+	}
+
 	const now = new Date()
 
 	const bobCookie: Cookie = {
@@ -70,9 +83,7 @@ setup('Authenticate Bob', async () => {
 	})
 
 	const browser = await chromium.launch()
-	const context = await browser.newContext({
-		storageState: bobAuthFile,
-	})
+	const context = await browser.newContext()
 	await context.addCookies([bobCookie])
 	await context.storageState({ path: bobAuthFile })
 	await browser.close()
@@ -139,9 +150,7 @@ setup('Authenticate Alice', async () => {
 	})
 
 	const browser = await chromium.launch()
-	const context = await browser.newContext({
-		storageState: aliceAuthFile,
-	})
+	const context = await browser.newContext({})
 	await context.addCookies([aliceCookie])
 	await context.storageState({ path: aliceAuthFile })
 	await browser.close()
