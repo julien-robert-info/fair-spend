@@ -1,27 +1,13 @@
 import { test as setup, BrowserContext, chromium } from '@playwright/test'
-import fs from 'fs'
-import path from 'path'
 import prisma from '@/utils/prisma'
+import { aliceAuthFile, bobAuthFile } from '../playwright.config'
 
-const bobAuthFile = 'playwright/.auth/bob.json'
 const bobSessionToken = 'd52f0c50-b8e3-4326-b48c-4d4a66fdeb64'
-
-const aliceAuthFile = 'playwright/.auth/alice.json'
 const aliceSessionToken = '04456e41-ec3b-4edf-92c1-48c14e57cacd2'
 
 type Cookie = Parameters<BrowserContext['addCookies']>[0][0]
 
-const makePath = (filePath: string) => {
-	if (!fs.existsSync(filePath)) {
-		const ret = fs.mkdirSync(path.dirname(filePath), { recursive: true })
-	}
-}
-
 setup('Authenticate Bob', async () => {
-	if (!fs.existsSync(bobAuthFile)) {
-		makePath(bobAuthFile)
-	}
-
 	const now = new Date()
 
 	const bobCookie: Cookie = {

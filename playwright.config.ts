@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
+export const bobAuthFile = 'playwright/.auth/bob.json'
+export const aliceAuthFile = 'playwright/.auth/alice.json'
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -57,7 +60,7 @@ export default defineConfig({
 			name: 'Mobile Chrome',
 			use: {
 				...devices['Pixel 5'],
-				storageState: 'playwright/.auth/alice.json',
+				storageState: aliceAuthFile,
 			},
 		},
 
@@ -77,7 +80,7 @@ export default defineConfig({
 			use: {
 				...devices['Desktop Chrome'],
 				channel: 'chrome',
-				storageState: 'playwright/.auth/bob.json',
+				storageState: bobAuthFile,
 			},
 		},
 	],
