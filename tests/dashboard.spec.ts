@@ -10,7 +10,9 @@ test('Show Groups Dashboard', async ({ page }) => {
 test.describe('Groups Dashboard', () => {
 	test.beforeEach(async () => {
 		await prisma.group.deleteMany({
-			where: { name: { in: ['testGroup', 'myGroup'] } },
+			where: {
+				name: { in: ['alice testGroup', 'bob testGroup', 'myGroup'] },
+			},
 		})
 	})
 
@@ -69,14 +71,16 @@ test.describe('Groups Dashboard', () => {
 		await page
 			.getByRole('button', { name: isMobile ? 'add' : 'Nouveau groupe' })
 			.click()
-		await page.getByLabel('nom *').fill('testGroup')
+		await page
+			.getByLabel('nom *')
+			.fill(isMobile ? 'bob testGroup' : 'alice testGroup')
 		await page.getByLabel('Mode de répartition').click()
 		await page.getByRole('option', { name: 'équitable' }).click()
 		await page.getByRole('button', { name: 'enregistrer' }).click()
 
-		let card = page
-			.locator('.MuiCard-root')
-			.filter({ has: page.getByText('testGroup') })
+		let card = page.locator('.MuiCard-root').filter({
+			has: page.getByText(isMobile ? 'bob testGroup' : 'alice testGroup'),
+		})
 
 		await expect(card).toBeVisible()
 
@@ -134,9 +138,11 @@ test.describe('Groups Dashboard', () => {
 
 		await secondUserPage.getByRole('button', { name: 'accept' }).click()
 
-		let secondUserCard = secondUserPage
-			.locator('.MuiCard-root')
-			.filter({ has: secondUserPage.getByText('testGroup') })
+		let secondUserCard = secondUserPage.locator('.MuiCard-root').filter({
+			has: secondUserPage.getByText(
+				isMobile ? 'bob testGroup' : 'alice testGroup'
+			),
+		})
 		await expect(secondUserCard).toBeVisible()
 
 		// leave
@@ -144,11 +150,14 @@ test.describe('Groups Dashboard', () => {
 
 		if (isMobile) {
 			await expect(async () => {
-				page.getByRole('button', {
+				const nextButton = page.getByRole('button', {
 					name: 'Next',
-				}).click()
-				await expect(card).toBeVisible()
-			}).toPass()
+				})
+				if (await nextButton.isVisible()) {
+					await nextButton.click()
+				}
+				await expect(card).toBeVisible({ timeout: 2000 })
+			}).toPass({ timeout: 12000 })
 		}
 
 		await expect(card.getByRole('button', { name: 'leave' })).toBeVisible()
@@ -168,13 +177,14 @@ test.describe('Groups Dashboard', () => {
 
 		if (isMobile) {
 			await expect(async () => {
-				secondUserPage
-					.getByRole('button', {
-						name: 'Next',
-					})
-					.click()
-				await expect(secondUserCard).toBeVisible()
-			}).toPass()
+				const nextButton = secondUserPage.getByRole('button', {
+					name: 'Next',
+				})
+				if (await nextButton.isVisible()) {
+					await nextButton.click()
+				}
+				await expect(secondUserCard).toBeVisible({ timeout: 2000 })
+			}).toPass({ timeout: 12000 })
 		}
 
 		await expect(
