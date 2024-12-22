@@ -5,7 +5,7 @@ import { inviteMail } from '@/utils/mail'
 import prisma from '@/utils/prisma'
 import { Prisma } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
-import { GroupDetails, UserDetails } from './group'
+import { GroupDetails, UserDetails } from '@/actions/group'
 
 export type InviteDetail = {
 	group: Omit<GroupDetails, 'members' | 'owner' | 'isOwner'> & {
@@ -45,7 +45,7 @@ export const getInvites = async (): Promise<InviteDetail[]> => {
 export const createInvite = async (prevState: any, formData: FormData) => {
 	const user = await authOrError()
 
-	const groupId = formData.get('groupId') as string
+	const groupId = Number(formData.get('groupId'))
 	const email = formData.get('email') as string
 
 	try {
@@ -103,7 +103,7 @@ export const createInvite = async (prevState: any, formData: FormData) => {
 	return { message: 'success' }
 }
 
-export const deleteInvite = async (groupId: string) => {
+export const deleteInvite = async (groupId: number) => {
 	const user = await authOrError()
 
 	try {

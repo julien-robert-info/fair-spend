@@ -1,6 +1,5 @@
 'use client'
 import React, { ReactNode } from 'react'
-import { deleteGroup, GroupDetails, leaveGroup } from '@/actions/group'
 import {
 	Card,
 	CardActions,
@@ -14,6 +13,7 @@ import {
 	Alert,
 	CardProps,
 	Grid,
+	CardActionArea,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
@@ -22,15 +22,18 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import { InviteForm } from '@/forms/InviteForm'
 import GroupCardContent from './GroupCardContent'
 import { TransferGroupForm } from '@/forms/TransferGroupForm'
+import { deleteGroup, GroupDetails, leaveGroup } from '@/actions/group'
 
 const GroupCard = ({
 	group,
 	edit,
+	onClick,
 	...props
 }: {
 	group: GroupDetails
-	edit: (id?: string) => void
-} & CardProps) => {
+	edit: (id?: number) => void
+	onClick?: React.MouseEventHandler<HTMLButtonElement>
+} & Omit<CardProps, 'onClick'>) => {
 	const [openConfirm, setOpenConfirm] = React.useState(false)
 	const [confirmError, setConfirmError] = React.useState<string | undefined>()
 	const [confirmText, setConfirmText] = React.useState(
@@ -102,7 +105,13 @@ const GroupCard = ({
 	return (
 		<>
 			<Card {...props}>
-				<GroupCardContent group={group} />
+				{onClick ? (
+					<CardActionArea onClick={onClick}>
+						<GroupCardContent group={group} />
+					</CardActionArea>
+				) : (
+					<GroupCardContent group={group} />
+				)}
 				<CardActions disableSpacing>
 					<Grid container justifyContent='space-around'>
 						<Grid item>

@@ -18,7 +18,7 @@ import UserAvatar from '@/components/UserAvatar'
 import { transferGroup } from '@/actions/group'
 
 export type TransferGroupFormFields = {
-	id: string
+	id: number
 	members: { user: DefaultSession['user'] }[]
 	onSuccess?: () => void
 }

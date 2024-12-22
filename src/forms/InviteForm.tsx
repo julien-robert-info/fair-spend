@@ -5,7 +5,7 @@ import { useFormState } from 'react-dom'
 import { createInvite } from '@/actions/invite'
 
 export type InviteFormFields = {
-	groupId: string
+	groupId: number
 	email?: string
 	onSuccess?: () => void
 }

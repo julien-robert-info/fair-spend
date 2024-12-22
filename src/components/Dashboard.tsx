@@ -28,9 +28,9 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 	const [openForm, setOpenForm] = React.useState(false)
 	const [formValues, setFormValues] = React.useState<GroupFormFields>({})
 	const [formTitle, setFormTitle] = React.useState('Nouveau groupe')
-	const [currentGroup, setCurrentGroup] = React.useState<string | undefined>()
+	const [currentGroup, setCurrentGroup] = React.useState<number | undefined>()
 
-	const handleOpenForm = (id?: string) => {
+	const handleOpenForm = (id?: number) => {
 		const group = groups.find((group: GroupDetails) => group.id === id)
 
 		setFormTitle(group ? 'Modifier groupe' : 'Nouveau groupe')

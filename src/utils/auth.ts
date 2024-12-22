@@ -11,7 +11,7 @@ import {
 } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import EmailProvider from 'next-auth/providers/email'
-import prisma from './prisma'
+import prisma from '@/utils/prisma'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 
 export const authConfig = {

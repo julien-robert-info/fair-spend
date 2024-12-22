@@ -16,7 +16,7 @@ import { upsertGroup } from '@/actions/group'
 import { useFormState } from 'react-dom'
 
 export type GroupFormFields = {
-	id?: string
+	id?: number
 	name?: string
 	shareMode?: ShareMode
 	onSuccess?: (group?: Group) => void

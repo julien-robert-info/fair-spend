@@ -1,10 +1,10 @@
 'use client'
 import React from 'react'
 import {
+	Avatar,
 	Card,
 	CardActionArea,
 	CardContent,
-	Fab,
 	Stack,
 	Typography,
 } from '@mui/material'
@@ -14,8 +14,8 @@ import InviteCard from './InviteCard'
 import { DashboardProps } from './Dashboard'
 
 export type GroupDashboardProps = DashboardProps & {
-	currentGroup: string | undefined
-	setCurrentGroup: React.Dispatch<React.SetStateAction<string | undefined>>
+	currentGroup: number | undefined
+	setCurrentGroup: React.Dispatch<React.SetStateAction<number | undefined>>
 	handleOpenForm: () => void
 }
 
@@ -57,11 +57,11 @@ const GroupStack: React.FC<GroupDashboardProps> = ({
 					}}
 				/>
 			))}
-			<Card
-				onClick={() => handleOpenForm()}
-				sx={{ minWidth: 180, textAlign: 'center' }}
-			>
-				<CardActionArea sx={{ height: '100%' }}>
+			<Card sx={{ minWidth: 180, textAlign: 'center' }}>
+				<CardActionArea
+					onClick={() => handleOpenForm()}
+					sx={{ height: '100%' }}
+				>
 					<CardContent>
 						<Typography
 							sx={{ fontSize: 20 }}
@@ -70,17 +70,17 @@ const GroupStack: React.FC<GroupDashboardProps> = ({
 						>
 							Nouveau groupe
 						</Typography>
-						<Fab
-							size='small'
+						<Avatar
 							aria-label='add'
 							sx={{
 								color: 'white',
 								bgcolor: 'secondary.dark',
 								':hover': { bgcolor: 'secondary.dark' },
+								mx: 'auto',
 							}}
 						>
 							<AddIcon />
-						</Fab>
+						</Avatar>
 					</CardContent>
 				</CardActionArea>
 			</Card>

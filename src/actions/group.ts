@@ -45,7 +45,7 @@ export const getGroups = async (): Promise<GroupDetails[]> => {
 export const upsertGroup = async (prevState: any, formData: FormData) => {
 	const user = await authOrError()
 
-	const id = formData.get('id') as string
+	const id = Number(formData.get('id'))
 	const name = formData.get('name') as string
 	const shareMode = formData.get('shareMode') as ShareMode
 	let group
@@ -81,7 +81,7 @@ export const upsertGroup = async (prevState: any, formData: FormData) => {
 	return { message: 'success', result: group }
 }
 
-export const deleteGroup = async (id: string) => {
+export const deleteGroup = async (id: number) => {
 	const user = await authOrError()
 
 	try {
@@ -117,7 +117,7 @@ export const deleteGroup = async (id: string) => {
 	return { message: 'success' }
 }
 
-export const joinGroup = async (id: string) => {
+export const joinGroup = async (id: number) => {
 	const user = await authOrError()
 
 	try {
@@ -158,7 +158,7 @@ export const joinGroup = async (id: string) => {
 	return { message: 'success' }
 }
 
-export const leaveGroup = async (id: string) => {
+export const leaveGroup = async (id: number) => {
 	const user = await authOrError()
 
 	try {
@@ -204,7 +204,7 @@ export const leaveGroup = async (id: string) => {
 export const transferGroup = async (prevState: any, formData: FormData) => {
 	const user = await authOrError()
 
-	const id = formData.get('id') as string
+	const id = Number(formData.get('id'))
 	const newOwner = formData.get('newOwner') as string
 
 	try {

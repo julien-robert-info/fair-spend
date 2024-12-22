@@ -85,7 +85,7 @@ model Authenticator {
 }
 
 model Group {
-  id   String @id @default(cuid())
+  id   Int    @id @default(autoincrement())
   name String
 
   shareMode ShareMode
@@ -100,8 +100,8 @@ model Group {
 }
 
 model Member {
-  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId String
+  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId Int
 
   user      User   @relation(fields: [userEmail], references: [email])
   userEmail String
@@ -110,8 +110,8 @@ model Member {
 }
 
 model Invite {
-  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId String
+  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId Int
 
   email String
 
