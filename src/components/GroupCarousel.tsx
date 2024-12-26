@@ -15,6 +15,13 @@ const GroupCarousel: React.FC<GroupDashboardProps> = ({
 	const [carouselIndex, setCarouselIndex] = React.useState(0)
 
 	React.useEffect(() => {
+		if (invites.length === 0 && groups.length > 0) {
+			setCurrentGroup(groups[0]?.id)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
+
+	React.useEffect(() => {
 		setCarouselIndex((carouselIndex) =>
 			currentGroup
 				? invites.length +
@@ -22,13 +29,15 @@ const GroupCarousel: React.FC<GroupDashboardProps> = ({
 				: carouselIndex
 		)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [groups, currentGroup])
+	}, [groups, invites, currentGroup])
 
 	const handleChange = (now?: number) => {
-		if (now && now > invites.length) {
+		//update currentGroup only if not an invite
+		if (now !== undefined && now > invites.length - 1) {
 			setCurrentGroup(groups[now - invites.length]?.id)
 		} else {
 			now && setCarouselIndex(now)
+			setCurrentGroup(undefined)
 		}
 	}
 
