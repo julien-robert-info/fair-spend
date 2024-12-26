@@ -19,7 +19,10 @@ const InviteCard = ({ group, ...props }: InviteDetail & CardProps) => {
 
 	return (
 		<Card {...props}>
-			<GroupCardContent group={group} sx={{ opacity: 0.5 }} />
+			<GroupCardContent
+				group={group}
+				sx={{ position: 'relative', opacity: 0.5 }}
+			/>
 			<CardActions disableSpacing>
 				<Grid container justifyContent='space-around'>
 					<Grid item>

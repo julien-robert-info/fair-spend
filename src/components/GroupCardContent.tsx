@@ -3,10 +3,14 @@ import {
 	AvatarGroup,
 	CardContent,
 	CardContentProps,
+	Tooltip,
 	Typography,
 } from '@mui/material'
 import UserAvatar from './UserAvatar'
 import { InviteDetail } from '@/actions/invite'
+import { ShareMode } from '@prisma/client'
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism'
+import BalanceIcon from '@mui/icons-material/Balance'
 
 const GroupCardContent = ({
 	group,
@@ -14,8 +18,42 @@ const GroupCardContent = ({
 }: {
 	group: InviteDetail['group']
 } & CardContentProps) => {
+	//@ts-ignore
+	const isInvite = props.sx?.opacity === 0.5
+
 	return (
 		<CardContent {...props}>
+			{group.shareMode === ShareMode.FAIR ? (
+				<Tooltip
+					title={`${
+						group.members.some((member) => !member.isIncomeSet) &&
+						!isInvite
+							? 'tous les membres doivent définir leur revenu'
+							: 'Mode équitable'
+					}`}
+				>
+					<VolunteerActivismIcon
+						color={
+							group.members.some(
+								(member) => !member.isIncomeSet
+							) && !isInvite
+								? 'error'
+								: 'disabled'
+						}
+						sx={{
+							position: 'absolute',
+							right: 16,
+						}}
+					/>
+				</Tooltip>
+			) : (
+				<Tooltip title='Mode égalitaire'>
+					<BalanceIcon
+						color='disabled'
+						sx={{ position: 'absolute', right: 16 }}
+					/>
+				</Tooltip>
+			)}
 			<Typography
 				sx={{ fontSize: 20 }}
 				color='text.secondary'
