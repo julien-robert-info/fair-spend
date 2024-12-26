@@ -1,5 +1,5 @@
 'use client'
-import React, { ReactNode } from 'react'
+import React from 'react'
 import {
 	Card,
 	CardActions,
@@ -22,7 +22,8 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import { InviteForm } from '@/forms/InviteForm'
 import GroupCardContent from './GroupCardContent'
 import { TransferGroupForm } from '@/forms/TransferGroupForm'
-import { deleteGroup, GroupDetails, leaveGroup } from '@/actions/group'
+import { deleteGroup, GroupDetails } from '@/actions/group'
+import { leaveGroup } from '@/actions/member'
 
 const GroupCard = ({
 	group,
@@ -45,7 +46,7 @@ const GroupCard = ({
 	const [formTitle, setFormTitle] = React.useState(
 		'Inviter un nouveau membre'
 	)
-	const [form, setForm] = React.useState<ReactNode>()
+	const [form, setForm] = React.useState<React.ReactNode>()
 
 	const handleOpenConfirm = (action: 'delete' | 'leave') => {
 		if (action === 'delete') {

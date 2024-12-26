@@ -2,10 +2,10 @@
 import React from 'react'
 import { Card, CardActions, IconButton, Grid, CardProps } from '@mui/material'
 import { deleteInvite, InviteDetail } from '@/actions/invite'
-import { joinGroup } from '@/actions/group'
 import CheckIcon from '@mui/icons-material/Check'
 import CloseIcon from '@mui/icons-material/Close'
 import GroupCardContent from './GroupCardContent'
+import { joinGroup } from '@/actions/member'
 
 const InviteCard = ({ group, ...props }: InviteDetail & CardProps) => {
 	const handleAccept = async () => {
