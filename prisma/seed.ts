@@ -30,12 +30,12 @@ const createGroups = async () => {
 		},
 	})
 
-	//group owned with members
-	await prisma.group.create({
+	//egalitarian group owned with members
+	const owned = await prisma.group.create({
 		data: {
 			name: randWord(),
 			owner: { connect: me },
-			shareMode: shareModes[randNumber({ max: 1 })] as ShareMode,
+			shareMode: ShareMode.EGALITARIAN,
 			members: {
 				createMany: {
 					data: [
@@ -48,17 +48,17 @@ const createGroups = async () => {
 		},
 	})
 
-	//group not owned
-	await prisma.group.create({
+	//fair group not owned
+	const notOwned = await prisma.group.create({
 		data: {
 			name: randWord(),
 			owner: { connect: alice },
-			shareMode: shareModes[randNumber({ max: 1 })] as ShareMode,
+			shareMode: ShareMode.FAIR,
 			members: {
 				createMany: {
 					data: [
-						{ userEmail: me?.email ?? '' },
-						{ userEmail: alice?.email ?? '' },
+						{ userEmail: me?.email ?? '', income: 2000 },
+						{ userEmail: alice?.email ?? '', income: 1500 },
 					],
 				},
 			},
@@ -74,7 +74,7 @@ const createGroups = async () => {
 			members: {
 				create: { user: { connect: bob } },
 			},
-			Invite: { create: { email: me?.email ?? '' } },
+			invites: { create: { email: me?.email ?? '' } },
 		},
 	})
 }

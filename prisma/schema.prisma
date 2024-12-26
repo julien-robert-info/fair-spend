@@ -106,6 +106,8 @@ model Member {
   user      User   @relation(fields: [userEmail], references: [email])
   userEmail String
 
+  income Int?
+
   @@unique([groupId, userEmail])
 }
 

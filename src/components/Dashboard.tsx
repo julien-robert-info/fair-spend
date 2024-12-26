@@ -16,6 +16,7 @@ import { InviteDetail } from '@/actions/invite'
 import GroupStack from './GroupStack'
 import { GroupForm, GroupFormFields } from '@/forms/GroupForm'
 import GroupCarousel from './GroupCarousel'
+import DebtsPanel from './DebtsPanel'
 
 export type DashboardProps = {
 	groups: GroupDetails[]
@@ -86,6 +87,9 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 					handleOpenForm={handleOpenForm}
 				/>
 			)}
+			<DebtsPanel
+				group={groups.find((group) => group.id === currentGroup)}
+			/>
 			<Dialog open={openForm} onClose={() => setOpenForm(false)}>
 				<DialogTitle>{formTitle}</DialogTitle>
 				<DialogContent>
