@@ -9,7 +9,7 @@ import { GroupDetails, UserDetails } from '@/actions/group'
 
 export type InviteDetail = {
 	group: Omit<GroupDetails, 'members' | 'owner' | 'isOwner'> & {
-		members: { user: Omit<UserDetails, 'email'> }[]
+		members: { isIncomeSet: Boolean; user: Omit<UserDetails, 'email'> }[]
 	}
 }
 
@@ -25,6 +25,7 @@ export const getInvites = async (): Promise<InviteDetail[]> => {
 					shareMode: true,
 					members: {
 						select: {
+							isIncomeSet: true,
 							user: {
 								select: {
 									name: true,

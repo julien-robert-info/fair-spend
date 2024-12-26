@@ -13,6 +13,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import EmailProvider from 'next-auth/providers/email'
 import prisma from '@/utils/prisma'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import { PrismaClient } from '@prisma/client'
 
 export const authConfig = {
 	providers: [
@@ -33,7 +34,7 @@ export const authConfig = {
 			from: process.env.EMAIL_FROM,
 		}),
 	],
-	adapter: PrismaAdapter(prisma),
+	adapter: PrismaAdapter(prisma as unknown as PrismaClient),
 } satisfies NextAuthOptions
 
 export const auth = async (

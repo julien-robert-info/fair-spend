@@ -11,7 +11,7 @@ export type UserDetails = {
 }
 
 export type GroupDetails = Omit<Group, 'ownerId'> & {
-	members: { user: UserDetails }[]
+	members: { isIncomeSet: Boolean; user: UserDetails }[]
 	owner: { email: string }
 	isOwner: boolean
 }
@@ -27,6 +27,7 @@ export const getGroups = async (): Promise<GroupDetails[]> => {
 			owner: { select: { email: true } },
 			members: {
 				select: {
+					isIncomeSet: true,
 					user: { select: { name: true, image: true, email: true } },
 				},
 				where: { user: { email: { not: user?.email! } } },
@@ -103,90 +104,6 @@ export const deleteGroup = async (id: number) => {
 
 		await prisma.group.delete({
 			where: { id: id },
-		})
-	} catch (error) {
-		if (error instanceof Prisma.PrismaClientKnownRequestError) {
-			if (error.code === 'P2025') {
-				return { message: 'Groupe non trouvé' }
-			}
-		}
-		throw error
-	}
-	revalidatePath('/')
-
-	return { message: 'success' }
-}
-
-export const joinGroup = async (id: number) => {
-	const user = await authOrError()
-
-	try {
-		const group = await prisma.group.findUniqueOrThrow({
-			select: {
-				members: {
-					select: {
-						user: {
-							select: { email: true },
-						},
-					},
-				},
-			},
-			where: { id: id },
-		})
-
-		const IsMember =
-			group.members.findIndex(
-				(member) => member.user.email === user?.email
-			) !== -1
-		if (IsMember) {
-			return { message: 'Vous êtes déjà membre du group' }
-		}
-
-		await prisma.member.create({
-			data: { groupId: id, userEmail: user?.email! },
-		})
-	} catch (error) {
-		if (error instanceof Prisma.PrismaClientKnownRequestError) {
-			if (error.code === 'P2025') {
-				return { message: 'Groupe non trouvé' }
-			}
-		}
-		throw error
-	}
-	revalidatePath('/')
-
-	return { message: 'success' }
-}
-
-export const leaveGroup = async (id: number) => {
-	const user = await authOrError()
-
-	try {
-		const group = await prisma.group.findUniqueOrThrow({
-			select: {
-				members: {
-					select: {
-						user: {
-							select: { email: true },
-						},
-					},
-				},
-			},
-			where: { id: id },
-		})
-
-		const IsMember =
-			group.members.findIndex(
-				(member) => member.user.email === user?.email
-			) !== -1
-		if (!IsMember) {
-			return { message: "Vous n'êtes pas membre du group" }
-		}
-
-		await prisma.member.delete({
-			where: {
-				groupId_userEmail: { groupId: id, userEmail: user?.email! },
-			},
 		})
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
