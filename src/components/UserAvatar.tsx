@@ -1,5 +1,5 @@
 'use client'
-import { stringAvatar } from '@/utils/string'
+import { stringAvatar } from '@/utils'
 import { Avatar, Tooltip } from '@mui/material'
 import { DefaultSession } from 'next-auth'
 
