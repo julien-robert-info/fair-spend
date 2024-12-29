@@ -1,9 +1,12 @@
 import { PrismaClient, ShareMode } from '@prisma/client'
-import { randNumber, randWord } from '@ngneat/falso'
+import { rand, randNumber, randQuote, randWord } from '@ngneat/falso'
+import { calculateDebts } from '@/actions/debt'
 
 const prisma = new PrismaClient()
 
 const clearDb = async () => {
+	await prisma.debt.deleteMany({})
+	await prisma.expense.deleteMany({})
 	await prisma.group.deleteMany({})
 }
 
@@ -58,6 +61,7 @@ const createGroups = async () => {
 				createMany: {
 					data: [
 						{ userEmail: me?.email ?? '', income: 2000 },
+						{ userEmail: bob?.email ?? '', income: 1000 },
 						{ userEmail: alice?.email ?? '', income: 1500 },
 					],
 				},
@@ -74,15 +78,50 @@ const createGroups = async () => {
 			members: {
 				create: { user: { connect: bob } },
 			},
-			invites: { create: { email: me?.email ?? '' } },
+			invites: {
+				create: { email: me?.email ?? '' },
+			},
 		},
 	})
+
+	return [owned, notOwned].map((group) => group.id)
+}
+
+const createExpenses = async (groups: number[]) => {
+	const users = await getUsers()
+
+	for (let i = 0; i < groups.length; i++) {
+		const expenseCount = randNumber({ min: 1, max: 3 })
+		for (let j = 0; j < expenseCount; j++) {
+			const amount = randNumber({ min: 100, max: 10000 })
+			const payer = rand(users)
+			const expense = await prisma.expense.create({
+				data: {
+					amount,
+					description: randQuote(),
+					date: new Date(),
+					group: { connect: { id: groups[i] } },
+					payer: { connect: { email: payer.email } },
+					debts: {
+						createMany: {
+							data: await calculateDebts(
+								groups[i],
+								amount,
+								payer.email
+							),
+						},
+					},
+				},
+			})
+		}
+	}
 }
 
 const main = async () => {
 	await clearDb()
 
-	await createGroups()
+	const groups = await createGroups()
+	await createExpenses(groups)
 }
 
 main()

@@ -25,6 +25,10 @@ model User {
 
   groups     Group[]
   membership Member[]
+  expenses   Expense[]
+  debts      Debt[]
+  // transferSended   Transfer[] @relation(name: "sender")
+  // transferReceived Transfer[] @relation(name: "receiver")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -93,8 +97,10 @@ model Group {
   owner   User   @relation(fields: [ownerId], references: [id])
   ownerId String
 
-  members Member[]
-  Invite  Invite[]
+  members  Member[]
+  invites  Invite[]
+  expenses Expense[]
+  // Transfer Transfer[]
 
   @@unique([name, ownerId])
 }
@@ -119,3 +125,56 @@ model Invite {
 
   @@unique([email, groupId])
 }
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  amount      Int
+  description String
+  date        DateTime @default(now())
+
+  payerId String
+  payer   User   @relation(fields: [payerId], references: [id])
+
+  groupId Int
+  group   Group @relation(fields: [groupId], references: [id])
+
+  debts Debt[]
+}
+
+model Debt {
+  id     Int @id @default(autoincrement())
+  amount Int
+
+  expenseId Int
+  expense   Expense @relation(fields: [expenseId], references: [id])
+
+  debtorId String
+  debtor   User   @relation(fields: [debtorId], references: [id])
+
+  // payback    Payback[] @relation(name: "debt")
+  // payingBack Payback[] @relation(name: "counterDebt")
+}
+
+// model Payback {
+//   id            Int       @id @default(autoincrement())
+//   debtId        Int
+//   debt          Debt      @relation(name: "debt", fields: [debtId], references: [id])
+//   amount        Int
+//   counterDebtId Int?
+//   counterDebt   Debt?     @relation(name: "counterDebt", fields: [counterDebtId], references: [id])
+//   transferId    Int?
+//   transfer      Transfer? @relation(fields: [transferId], references: [id])
+// }
+
+// model Transfer {
+//   id         Int       @id @default(autoincrement())
+//   amount     Int
+//   date       DateTime  @default(now())
+//   senderId   String
+//   sender     User      @relation(name: "sender", fields: [senderId], references: [id])
+//   receiverId String
+//   receiver   User      @relation(name: "receiver", fields: [receiverId], references: [id])
+//   groupId    Int
+//   group      Group     @relation(fields: [groupId], references: [id])
+//   Payback    Payback[]
+// }
