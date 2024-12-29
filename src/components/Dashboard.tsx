@@ -79,13 +79,15 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 					handleOpenForm={handleOpenForm}
 				/>
 			) : (
-				<GroupCarousel
-					groups={groups}
-					invites={invites}
-					currentGroup={currentGroup}
-					setCurrentGroup={setCurrentGroup}
-					handleOpenForm={handleOpenForm}
-				/>
+				(invites.length > 0 || groups.length > 0) && (
+					<GroupCarousel
+						groups={groups}
+						invites={invites}
+						currentGroup={currentGroup}
+						setCurrentGroup={setCurrentGroup}
+						handleOpenForm={handleOpenForm}
+					/>
+				)
 			)}
 			<DebtsPanel
 				group={groups.find((group) => group.id === currentGroup)}
