@@ -61,7 +61,7 @@ export const getOwnedDebts = async (
 
 export const calculateDebts = async (
 	groupId: number,
-	amount: number,
+	amount: Dinero<number>,
 	payerEmail: string
 ): Promise<{ amount: number; debtorId: string }[]> => {
 	const debtors = shuffleArray(
@@ -95,7 +95,7 @@ export const calculateDebts = async (
 		shares = Array(debtors.length).fill(1)
 	}
 
-	const debts = allocate(dinero({ amount: amount, currency: USD }), shares)
+	const debts = allocate(amount, shares)
 		.filter((amount, index) => debtors[index].user.email !== payerEmail)
 		.map((debtShare, index) => ({
 			debtorId: debtors.filter(

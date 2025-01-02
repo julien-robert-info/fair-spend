@@ -2,8 +2,8 @@
 import prisma from '@/utils/prisma'
 import { authOrError } from '@/utils/auth'
 import { revalidatePath } from 'next/cache'
-import { calculateDebts } from '@/actions/debt'
-import { Expense } from '@prisma/client'
+import { dinero, toSnapshot } from 'dinero.js'
+import { USD } from '@dinero.js/currencies'
 
 export const createExpense = async (
 	prevState: any,
@@ -20,14 +20,14 @@ export const createExpense = async (
 		return { message: 'Montant invalide' }
 	}
 
-	const amount = rawAmount * 100
+	const amount = dinero({ amount: rawAmount * 100, currency: USD })
 
 	let expense
 	try {
 		expense = await prisma.expense.create({
 			data: {
-				amount,
 				description,
+				amount: toSnapshot(amount).amount,
 				date: new Date(),
 				group: { connect: { id: groupId } },
 				payer: { connect: { email: user?.email! } },

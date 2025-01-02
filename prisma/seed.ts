@@ -1,6 +1,8 @@
 import { PrismaClient, ShareMode } from '@prisma/client'
 import { rand, randNumber, randQuote, randWord } from '@ngneat/falso'
 import { calculateDebts } from '@/actions/debt'
+import { dinero } from 'dinero.js'
+import { USD } from '@dinero.js/currencies'
 
 const prisma = new PrismaClient()
 
@@ -95,7 +97,7 @@ const createExpenses = async (groups: number[]) => {
 		for (let j = 0; j < expenseCount; j++) {
 			const amount = randNumber({ min: 100, max: 10000 })
 			const payer = rand(users)
-			const expense = await prisma.expense.create({
+			await prisma.expense.create({
 				data: {
 					amount,
 					description: randQuote(),
@@ -106,7 +108,7 @@ const createExpenses = async (groups: number[]) => {
 						createMany: {
 							data: await calculateDebts(
 								groups[i],
-								amount,
+								dinero({ amount: amount, currency: USD }),
 								payer.email
 							),
 						},
