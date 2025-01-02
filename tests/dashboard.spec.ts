@@ -30,7 +30,7 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 	await expect(addExpenseButton).toBeVisible()
 	await expect(settingButton).toBeHidden()
 
-	page.reload()
+	await page.reload()
 	if (isMobile) {
 		SwipeToLocator(page, fairModeCard)
 	} else {

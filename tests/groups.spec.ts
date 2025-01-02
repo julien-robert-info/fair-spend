@@ -3,7 +3,7 @@ import { SwipeToLocator } from '@/utils/test'
 import { test, expect } from '@playwright/test'
 
 test.describe('Groups features', () => {
-	test.beforeEach(async () => {
+	test.afterEach(async () => {
 		await prisma.group.deleteMany({
 			where: {
 				name: {
@@ -24,7 +24,9 @@ test.describe('Groups features', () => {
 	}) => {
 		await page.goto('/')
 		await page
-			.getByRole('button', { name: isMobile ? 'add' : 'Nouveau groupe' })
+			.getByRole('button', {
+				name: isMobile ? 'add_group' : 'Nouveau groupe',
+			})
 			.click()
 
 		const nameFormField = page.getByLabel('nom *')
@@ -71,7 +73,9 @@ test.describe('Groups features', () => {
 
 		// create
 		await page
-			.getByRole('button', { name: isMobile ? 'add' : 'Nouveau groupe' })
+			.getByRole('button', {
+				name: isMobile ? 'add_group' : 'Nouveau groupe',
+			})
 			.click()
 		await page
 			.getByLabel('nom *')

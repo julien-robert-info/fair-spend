@@ -48,6 +48,7 @@ test.describe('Debt panel features', () => {
 			name: 'add_expense',
 		})
 		const amountFormField = page.getByLabel('Montant *')
+		const descriptionFormField = page.getByLabel('Description')
 		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
 		const overlay = page.getByRole('presentation')
 
@@ -58,6 +59,7 @@ test.describe('Debt panel features', () => {
 		await expect(addExpenseButton).toBeVisible()
 		await addExpenseButton.click()
 		await amountFormField.fill('invalid')
+		await descriptionFormField.fill('test')
 		await submitButton.click()
 
 		await expect(page.getByText('Montant invalide')).toBeVisible()
@@ -65,6 +67,7 @@ test.describe('Debt panel features', () => {
 		await overlay.click({ position: { x: 10, y: 10 } })
 		await addExpenseButton.click()
 		await amountFormField.fill('-12')
+		await descriptionFormField.fill('test')
 
 		await expect(page.getByText('Montant invalide')).toBeHidden()
 
@@ -81,6 +84,7 @@ test.describe('Debt panel features', () => {
 			name: 'add_expense',
 		})
 		const amountFormField = page.getByLabel('Montant *')
+		const descriptionFormField = page.getByLabel('Description')
 		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
 
 		if (!isMobile) {
@@ -91,6 +95,7 @@ test.describe('Debt panel features', () => {
 		await amountFormField.fill(
 			randNumber({ min: 1, max: 100, fraction: 2 }).toString()
 		)
+		await descriptionFormField.fill('test')
 		await submitButton.click()
 
 		await expect(

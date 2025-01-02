@@ -63,7 +63,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 					<Fab
 						size='small'
 						color='secondary'
-						aria-label='add'
+						aria-label='add_group'
 						onClick={() => handleOpenForm()}
 					>
 						<AddIcon />
