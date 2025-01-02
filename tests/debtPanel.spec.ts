@@ -99,7 +99,7 @@ test.describe('Debt panel features', () => {
 		await submitButton.click()
 
 		await expect(
-			page.getByText(/Montant : \d+\.\d+€/).first()
+			page.getByText(/\w+ vous doit \d+\.\d+€/).first()
 		).toBeVisible()
 	})
 })
