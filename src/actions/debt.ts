@@ -4,7 +4,7 @@ import { shuffleArray } from '@/utils'
 import prisma from '@/utils/prisma'
 import { ShareMode } from '@prisma/client'
 import { USD } from '@dinero.js/currencies'
-import { allocate, dinero, toSnapshot } from 'dinero.js'
+import { add, allocate, Dinero, dinero, equal, toSnapshot } from 'dinero.js'
 
 export type DebtDetails = {
 	amount: number
@@ -26,11 +26,12 @@ export const getDebts = async (groupId: number): Promise<DebtDetails[]> => {
 				select: {
 					date: true,
 					description: true,
-					payer: { select: { name: true, image: true } },
+					payer: { select: { name: true, image: true, email: true } },
 				},
 			},
 		},
 		where: {
+			isRepayed: false,
 			debtor: { email: user?.email! },
 			expense: { groupId: groupId },
 		},
@@ -45,7 +46,7 @@ export const getOwnedDebts = async (
 	return await prisma.debt.findMany({
 		select: {
 			amount: true,
-			debtor: { select: { name: true, image: true } },
+			debtor: { select: { name: true, image: true, email: true } },
 			expense: {
 				select: {
 					date: true,
@@ -54,6 +55,7 @@ export const getOwnedDebts = async (
 			},
 		},
 		where: {
+			isRepayed: false,
 			expense: { groupId: groupId, payer: { email: user?.email! } },
 		},
 	})
@@ -105,4 +107,37 @@ export const calculateDebts = async (
 		}))
 
 	return debts
+}
+
+export const repayDebts = async (debtIds: number[]) => {
+	try {
+		debtIds.map(async (debtId) => {
+			const debt = await prisma.debt.findFirstOrThrow({
+				select: {
+					amount: true,
+					isRepayed: true,
+					paybacks: { select: { amount: true } },
+				},
+				where: { id: debtId },
+			})
+
+			const isRepayed = equal(
+				dinero({ amount: debt.amount, currency: USD }),
+				debt.paybacks.reduce(
+					(acc, { amount }) =>
+						add(acc, dinero({ amount: amount, currency: USD })),
+					dinero({ amount: 0, currency: USD })
+				)
+			)
+
+			if (isRepayed !== debt.isRepayed) {
+				await prisma.debt.update({
+					data: { isRepayed: isRepayed },
+					where: { id: debtId },
+				})
+			}
+		})
+	} catch (error) {
+		throw error
+	}
 }

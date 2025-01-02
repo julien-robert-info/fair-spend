@@ -7,6 +7,8 @@ import { USD } from '@dinero.js/currencies'
 const prisma = new PrismaClient()
 
 const clearDb = async () => {
+	await prisma.payback.deleteMany({})
+	await prisma.transfer.deleteMany({})
 	await prisma.debt.deleteMany({})
 	await prisma.expense.deleteMany({})
 	await prisma.group.deleteMany({})

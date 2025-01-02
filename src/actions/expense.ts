@@ -2,13 +2,24 @@
 import prisma from '@/utils/prisma'
 import { authOrError } from '@/utils/auth'
 import { revalidatePath } from 'next/cache'
+import { calculateDebts, repayDebts } from '@/actions/debt'
+import { Debt, Expense } from '@prisma/client'
+import { calcultatePaybacks } from '@/actions/payback'
 import { dinero, toSnapshot } from 'dinero.js'
 import { USD } from '@dinero.js/currencies'
+
+type ExpenseDetail = Omit<Expense, 'id'> & {
+	debts: Array<
+		Omit<Debt, 'isRepayed' | 'expenseId' | 'debtorId'> & {
+			debtor: { email: string }
+		}
+	>
+}
 
 export const createExpense = async (
 	prevState: any,
 	formData: FormData
-): Promise<{ message: string; result?: Expense }> => {
+): Promise<{ message: string; result?: ExpenseDetail }> => {
 	const user = await authOrError()
 
 	const groupId = Number(formData.get('groupId'))
@@ -41,7 +52,37 @@ export const createExpense = async (
 					},
 				},
 			},
+			select: {
+				amount: true,
+				description: true,
+				date: true,
+				groupId: true,
+				payerId: true,
+				debts: {
+					select: {
+						id: true,
+						amount: true,
+						debtor: { select: { email: true } },
+					},
+				},
+			},
 		})
+
+		const paybacks = await Promise.all(
+			expense.debts.map(
+				async (debt) =>
+					await calcultatePaybacks(
+						groupId,
+						debt.amount,
+						user?.email!,
+						debt.debtor.email,
+						debt.id
+					)
+			)
+		)
+
+		await prisma.payback.createMany({ data: paybacks.flat() })
+		await repayDebts(expense.debts.map((debt) => debt.id))
 	} catch (error) {
 		throw error
 	}

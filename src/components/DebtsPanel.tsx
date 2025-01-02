@@ -91,7 +91,7 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 						<>
 							<Typography>{`Solde : ${data.balance}€`}</Typography>
 							{data.debtList.length > 0 && (
-								<DebtList debts={data.debtList} />
+								<DebtList group={group} debts={data.debtList} />
 							)}
 						</>
 					)}

@@ -4,7 +4,9 @@ import { randNumber } from '@ngneat/falso'
 import prisma from '@/utils/prisma'
 
 test.describe('Debt panel features', () => {
-	test.beforeAll(async () => {
+	test.beforeEach(async () => {
+		await prisma.payback.deleteMany({})
+		await prisma.transfer.deleteMany({})
 		await prisma.debt.deleteMany({})
 		await prisma.expense.deleteMany({})
 	})
@@ -101,5 +103,51 @@ test.describe('Debt panel features', () => {
 		await expect(
 			page.getByText(/\w+ vous doit \d+\.\d+€/).first()
 		).toBeVisible()
+	})
+
+	test('Can repay a debt with a transfer', async ({
+		browser,
+		page,
+		isMobile,
+	}) => {
+		const secondUserContext = await browser.newContext({
+			storageState: isMobile
+				? 'playwright/.auth/bob.json'
+				: 'playwright/.auth/alice.json',
+		})
+		const secondUserPage = await secondUserContext.newPage()
+
+		const groupCard = page.locator('.MuiCard-root').first()
+		const repayButton = page.getByRole('button', { name: 'payback' })
+		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
+
+		await secondUserPage.goto('/')
+
+		if (!isMobile) {
+			secondUserPage.locator('.MuiCard-root').first().click()
+		}
+
+		await secondUserPage
+			.getByRole('button', {
+				name: 'add_expense',
+			})
+			.click()
+		await secondUserPage.getByLabel('Montant *').fill('100')
+		await secondUserPage.getByLabel('Description').fill('test')
+		await secondUserPage
+			.getByRole('button', { name: 'Enregistrer' })
+			.click()
+
+		await page.goto('/')
+
+		if (!isMobile) {
+			groupCard.click()
+		}
+
+		await expect(repayButton).toBeVisible()
+		await repayButton.click()
+		await submitButton.click()
+
+		await expect(repayButton).toBeHidden()
 	})
 })

@@ -23,12 +23,12 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
-  groups     Group[]
-  membership Member[]
-  expenses   Expense[]
-  debts      Debt[]
-  // transferSended   Transfer[] @relation(name: "sender")
-  // transferReceived Transfer[] @relation(name: "receiver")
+  groups           Group[]
+  membership       Member[]
+  expenses         Expense[]
+  debts            Debt[]
+  transferSended   Transfer[] @relation(name: "sender")
+  transferReceived Transfer[] @relation(name: "receiver")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -100,7 +100,7 @@ model Group {
   members  Member[]
   invites  Invite[]
   expenses Expense[]
-  // Transfer Transfer[]
+  Transfer Transfer[]
 
   @@unique([name, ownerId])
 }
@@ -142,8 +142,9 @@ model Expense {
 }
 
 model Debt {
-  id     Int @id @default(autoincrement())
-  amount Int
+  id        Int     @id @default(autoincrement())
+  amount    Int
+  isRepayed Boolean @default(false)
 
   expenseId Int
   expense   Expense @relation(fields: [expenseId], references: [id])
@@ -151,30 +152,38 @@ model Debt {
   debtorId String
   debtor   User   @relation(fields: [debtorId], references: [id])
 
-  // payback    Payback[] @relation(name: "debt")
-  // payingBack Payback[] @relation(name: "counterDebt")
+  paybacks   Payback[] @relation(name: "debt")
+  payingBack Payback[] @relation(name: "counterDebt")
 }
 
-// model Payback {
-//   id            Int       @id @default(autoincrement())
-//   debtId        Int
-//   debt          Debt      @relation(name: "debt", fields: [debtId], references: [id])
-//   amount        Int
-//   counterDebtId Int?
-//   counterDebt   Debt?     @relation(name: "counterDebt", fields: [counterDebtId], references: [id])
-//   transferId    Int?
-//   transfer      Transfer? @relation(fields: [transferId], references: [id])
-// }
+model Payback {
+  id     Int @id @default(autoincrement())
+  amount Int
 
-// model Transfer {
-//   id         Int       @id @default(autoincrement())
-//   amount     Int
-//   date       DateTime  @default(now())
-//   senderId   String
-//   sender     User      @relation(name: "sender", fields: [senderId], references: [id])
-//   receiverId String
-//   receiver   User      @relation(name: "receiver", fields: [receiverId], references: [id])
-//   groupId    Int
-//   group      Group     @relation(fields: [groupId], references: [id])
-//   Payback    Payback[]
-// }
+  debtId Int
+  debt   Debt @relation(name: "debt", fields: [debtId], references: [id])
+
+  counterDebtId Int?
+  counterDebt   Debt? @relation(name: "counterDebt", fields: [counterDebtId], references: [id])
+
+  transferId Int?
+  transfer   Transfer? @relation(fields: [transferId], references: [id])
+}
+
+model Transfer {
+  id         Int      @id @default(autoincrement())
+  amount     Int
+  date       DateTime @default(now())
+  isConsumed Boolean
+
+  senderId String
+  sender   User   @relation(name: "sender", fields: [senderId], references: [id])
+
+  receiverId String
+  receiver   User   @relation(name: "receiver", fields: [receiverId], references: [id])
+
+  groupId Int
+  group   Group @relation(fields: [groupId], references: [id])
+
+  paybacks Payback[]
+}
