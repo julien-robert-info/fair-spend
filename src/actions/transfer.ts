@@ -8,6 +8,37 @@ import { add, dinero, equal } from 'dinero.js'
 import { calcultatePaybacks } from '@/actions/payback'
 import { repayDebts } from './debt'
 
+export type TransferDetail = {
+	amount: number
+	date: Date
+	sender: { name: string | null; image: string | null }
+	receiver: { name: string | null; image: string | null }
+}
+
+export const getTransfers = async (
+	groupId: number
+): Promise<TransferDetail[]> => {
+	const user = await authOrError()
+
+	const transfers = await prisma.transfer.findMany({
+		select: {
+			amount: true,
+			date: true,
+			sender: { select: { name: true, image: true } },
+			receiver: { select: { name: true, image: true } },
+		},
+		where: {
+			groupId: groupId,
+			OR: [
+				{ sender: { email: user?.email! } },
+				{ receiver: { email: user?.email! } },
+			],
+		},
+	})
+
+	return transfers
+}
+
 export const createTransfer = async (
 	prevState: any,
 	formData: FormData

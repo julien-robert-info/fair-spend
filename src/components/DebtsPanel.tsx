@@ -7,33 +7,24 @@ import {
 	DialogTitle,
 	IconButton,
 	Paper,
-	Typography,
 } from '@mui/material'
 import AddCardRoundedIcon from '@mui/icons-material/AddCardRounded'
 import SettingsIcon from '@mui/icons-material/Settings'
+import HistoryIcon from '@mui/icons-material/History'
+import CloseIcon from '@mui/icons-material/Close'
 import { GroupDetails } from '@/actions/group'
 import { ExpenseForm } from '@/forms/ExpenseForm'
 import { ShareMode } from '@prisma/client'
 import { IncomeForm } from '@/forms/IncomeForm'
 import { getIncome } from '@/actions/member'
-import { DebtList } from './DebtList'
-import { getPanelData, PanelData } from '@/utils/debt'
+import { DebtList } from '@/components/DebtList'
+import { MemberHistory } from '@/components/MemberHistory'
 
 const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
-	const [data, setData] = React.useState<PanelData | undefined>()
+	const [tab, setTab] = React.useState(0)
 	const [openForm, setOpenForm] = React.useState(false)
 	const [formTitle, setFormTitle] = React.useState('Saisir une dépense')
 	const [form, setForm] = React.useState<React.ReactNode>()
-
-	React.useEffect(() => {
-		const updatedata = async (groupId: number) => {
-			setData(await getPanelData(groupId))
-		}
-
-		if (group) {
-			updatedata(group.id)
-		}
-	}, [group])
 
 	const handleOpenForm = async (
 		form: 'expense' | 'income',
@@ -70,15 +61,33 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 		>
 			{group && (
 				<>
-					{group.shareMode === ShareMode.FAIR && (
-						<IconButton
-							aria-label='settings'
-							onClick={() => handleOpenForm('income', group.id)}
-							sx={{ float: 'right' }}
-						>
-							<SettingsIcon />
-						</IconButton>
-					)}
+					<Box sx={{ float: 'right' }}>
+						{group.shareMode === ShareMode.FAIR && (
+							<IconButton
+								aria-label='settings'
+								onClick={() =>
+									handleOpenForm('income', group.id)
+								}
+							>
+								<SettingsIcon />
+							</IconButton>
+						)}
+						{tab === 0 ? (
+							<IconButton
+								aria-label='history'
+								onClick={() => setTab(1)}
+							>
+								<HistoryIcon />
+							</IconButton>
+						) : (
+							<IconButton
+								aria-label='close'
+								onClick={() => setTab(0)}
+							>
+								<CloseIcon />
+							</IconButton>
+						)}
+					</Box>
 					<Box sx={{ textAlign: 'center' }}>
 						<IconButton
 							aria-label='add_expense'
@@ -87,13 +96,10 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 							<AddCardRoundedIcon />
 						</IconButton>
 					</Box>
-					{data && (
-						<>
-							<Typography>{`Solde : ${data.balance}€`}</Typography>
-							{data.debtList.length > 0 && (
-								<DebtList group={group} debts={data.debtList} />
-							)}
-						</>
+					{tab === 0 ? (
+						<DebtList group={group} />
+					) : (
+						<MemberHistory group={group} />
 					)}
 					<Dialog open={openForm} onClose={() => setOpenForm(false)}>
 						<DialogTitle>{formTitle}</DialogTitle>

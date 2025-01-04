@@ -26,10 +26,18 @@ export type DashboardProps = {
 const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 	const theme = useTheme()
 	const isDesktop = useMediaQuery(theme.breakpoints.up('sm'))
+	const [didmount, setDidmount] = React.useState(false)
 	const [openForm, setOpenForm] = React.useState(false)
 	const [formValues, setFormValues] = React.useState<GroupFormFields>({})
 	const [formTitle, setFormTitle] = React.useState('Nouveau groupe')
 	const [currentGroup, setCurrentGroup] = React.useState<number | undefined>()
+
+	React.useEffect(() => {
+		if (!didmount) {
+			setDidmount(true)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
 	const handleOpenForm = (id?: number) => {
 		const group = groups.find((group: GroupDetails) => group.id === id)
@@ -59,7 +67,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 				}}
 			>
 				<Typography variant='h5'>Groupes</Typography>
-				{!isDesktop && (
+				{didmount && !isDesktop && (
 					<Fab
 						size='small'
 						color='secondary'
@@ -79,6 +87,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 					handleOpenForm={handleOpenForm}
 				/>
 			) : (
+				didmount &&
 				(invites.length > 0 || groups.length > 0) && (
 					<GroupCarousel
 						groups={groups}

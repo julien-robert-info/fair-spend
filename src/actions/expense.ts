@@ -8,12 +8,43 @@ import { calcultatePaybacks } from '@/actions/payback'
 import { dinero, toSnapshot } from 'dinero.js'
 import { USD } from '@dinero.js/currencies'
 
-type ExpenseDetail = Omit<Expense, 'id'> & {
+export type ExpenseDetail = Omit<Expense, 'id' | 'payerId' | 'groupId'> & {
+	payer: { name: string | null; image: string | null }
 	debts: Array<
-		Omit<Debt, 'isRepayed' | 'expenseId' | 'debtorId'> & {
-			debtor: { email: string }
+		Omit<Debt, 'id' | 'expenseId' | 'debtorId'> & {
+			debtor: {
+				name?: string | null
+				image?: string | null
+				email?: string | null
+			}
 		}
 	>
+}
+
+export const getExpenses = async (
+	groupId: number
+): Promise<ExpenseDetail[]> => {
+	const user = await authOrError()
+
+	const expenses = await prisma.expense.findMany({
+		select: {
+			amount: true,
+			date: true,
+			description: true,
+			payer: { select: { name: true, image: true } },
+			debts: {
+				select: {
+					amount: true,
+					isRepayed: true,
+					debtor: { select: { name: true, image: true } },
+				},
+				where: { debtor: { email: user?.email! } },
+			},
+		},
+		where: { groupId: groupId },
+	})
+
+	return expenses
 }
 
 export const createExpense = async (
@@ -58,10 +89,12 @@ export const createExpense = async (
 				date: true,
 				groupId: true,
 				payerId: true,
+				payer: { select: { name: true, image: true } },
 				debts: {
 					select: {
 						id: true,
 						amount: true,
+						isRepayed: true,
 						debtor: { select: { email: true } },
 					},
 				},
