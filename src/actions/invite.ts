@@ -1,5 +1,4 @@
 'use server'
-
 import { authOrError } from '@/utils/auth'
 import { inviteMail } from '@/utils/mail'
 import prisma from '@/utils/prisma'
