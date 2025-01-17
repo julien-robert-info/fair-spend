@@ -14,7 +14,7 @@ import AddIcon from '@mui/icons-material/Add'
 import { GroupDetails } from '@/actions/group'
 import { InviteDetail } from '@/actions/invite'
 import GroupStack from './GroupStack'
-import { GroupForm, GroupFormFields } from '@/forms/GroupForm'
+import { GroupForm, GroupFormProps } from '@/forms/GroupForm'
 import GroupCarousel from './GroupCarousel'
 import DebtsPanel from './DebtsPanel'
 
@@ -28,7 +28,9 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 	const isDesktop = useMediaQuery(theme.breakpoints.up('sm'))
 	const [didmount, setDidmount] = React.useState(false)
 	const [openForm, setOpenForm] = React.useState(false)
-	const [formValues, setFormValues] = React.useState<GroupFormFields>({})
+	const [formValues, setFormValues] = React.useState<GroupFormProps>({
+		initialValues: {},
+	})
 	const [formTitle, setFormTitle] = React.useState('Nouveau groupe')
 	const [currentGroup, setCurrentGroup] = React.useState<number | undefined>()
 
@@ -44,9 +46,11 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 
 		setFormTitle(group ? 'Modifier groupe' : 'Nouveau groupe')
 		setFormValues({
-			id: group?.id,
-			name: group?.name,
-			shareMode: group?.shareMode,
+			initialValues: {
+				id: group?.id,
+				name: group?.name,
+				shareMode: group?.shareMode,
+			},
 			onSuccess: (resultGroup) => {
 				setCurrentGroup(resultGroup?.id)
 				setOpenForm(false)
@@ -104,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 			<Dialog open={openForm} onClose={() => setOpenForm(false)}>
 				<DialogTitle>{formTitle}</DialogTitle>
 				<DialogContent>
-					<GroupForm initialValues={formValues} />
+					<GroupForm {...formValues} />
 				</DialogContent>
 			</Dialog>
 		</Box>

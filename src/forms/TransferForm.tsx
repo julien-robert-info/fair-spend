@@ -1,8 +1,6 @@
 'use client'
 import React from 'react'
 import {
-	Alert,
-	Box,
 	Button,
 	FormControl,
 	InputLabel,
@@ -12,53 +10,33 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material'
-import { useFormState } from 'react-dom'
 import { DefaultSession } from 'next-auth'
 import UserAvatar from '@/components/UserAvatar'
 import { createTransfer } from '@/actions/transfer'
+import Form from '@/components/Form'
 
-export type TransferFormFields = {
-	groupId: number
-	amount: string
-	receiver?: string
-	members: { user: DefaultSession['user'] }[]
+export type TransferFormProps = {
+	initialValues: {
+		groupId: number
+		amount: string
+		receiver?: string
+		members: { user: DefaultSession['user'] }[]
+	}
 	onSuccess?: () => void
 }
 
-export const TransferForm = ({
+export const TransferForm: React.FC<TransferFormProps> = ({
 	initialValues,
-}: {
-	initialValues: TransferFormFields
+	onSuccess,
 }) => {
-	const [state, formAction] = useFormState(createTransfer, {
-		message: '',
-	})
 	const [receiver, setReceiver] = React.useState(initialValues.receiver ?? '')
 
 	const handleChange = (event: SelectChangeEvent) => {
 		setReceiver(event.target.value)
 	}
 
-	React.useEffect(() => {
-		if (state.message === 'success' && initialValues.onSuccess) {
-			initialValues.onSuccess()
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [state])
-
 	return (
-		<Box
-			component='form'
-			action={formAction}
-			sx={{
-				display: 'flex',
-				flexDirection: 'column',
-				gap: 1,
-			}}
-		>
-			{state.message !== '' && state.message !== 'success' && (
-				<Alert severity='error'>{state.message}</Alert>
-			)}
+		<Form action={createTransfer} onSuccess={onSuccess}>
 			<TextField
 				name='groupId'
 				value={initialValues.groupId}
@@ -99,6 +77,6 @@ export const TransferForm = ({
 				</Select>
 			</FormControl>
 			<Button type='submit'>Enregistrer</Button>
-		</Box>
+		</Form>
 	)
 }

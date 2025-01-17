@@ -67,8 +67,8 @@ const GroupCard = ({
 				<InviteForm
 					initialValues={{
 						groupId: group.id,
-						onSuccess: () => setOpenForm(false),
 					}}
+					onSuccess={() => setOpenForm(false)}
 				/>
 			)
 		} else {
@@ -78,10 +78,10 @@ const GroupCard = ({
 					initialValues={{
 						id: group.id,
 						members: group.members,
-						onSuccess: async () => {
-							await leaveGroup(group.id)
-							setOpenForm(false)
-						},
+					}}
+					onSuccess={async () => {
+						await leaveGroup(group.id)
+						setOpenForm(false)
 					}}
 				/>
 			)

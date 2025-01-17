@@ -1,8 +1,6 @@
 'use client'
 import React from 'react'
 import {
-	Alert,
-	Box,
 	Button,
 	FormControl,
 	InputLabel,
@@ -13,23 +11,21 @@ import {
 } from '@mui/material'
 import { Group, ShareMode } from '@prisma/client'
 import { upsertGroup } from '@/actions/group'
-import { useFormState } from 'react-dom'
+import Form from '@/components/Form'
 
-export type GroupFormFields = {
-	id?: number
-	name?: string
-	shareMode?: ShareMode
+export type GroupFormProps = {
+	initialValues: {
+		id?: number
+		name?: string
+		shareMode?: ShareMode
+	}
 	onSuccess?: (group?: Group) => void
 }
 
-export const GroupForm = ({
+export const GroupForm: React.FC<GroupFormProps> = ({
 	initialValues,
-}: {
-	initialValues: GroupFormFields
+	onSuccess,
 }) => {
-	const [state, formAction] = useFormState(upsertGroup, {
-		message: '',
-	})
 	const [mode, setMode] = React.useState<ShareMode | ''>(
 		initialValues.shareMode ?? ''
 	)
@@ -38,26 +34,8 @@ export const GroupForm = ({
 		setMode(event.target.value as ShareMode)
 	}
 
-	React.useEffect(() => {
-		if (state.message === 'success' && initialValues.onSuccess) {
-			initialValues.onSuccess(state.result)
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [state])
-
 	return (
-		<Box
-			component='form'
-			action={formAction}
-			sx={{
-				display: 'flex',
-				flexDirection: 'column',
-				gap: 1,
-			}}
-		>
-			{state.message !== '' && state.message !== 'success' && (
-				<Alert severity='error'>{state.message}</Alert>
-			)}
+		<Form action={upsertGroup} onSuccess={onSuccess}>
 			<TextField
 				name='id'
 				value={initialValues.id}
@@ -87,6 +65,6 @@ export const GroupForm = ({
 				</Select>
 			</FormControl>
 			<Button type='submit'>Enregistrer</Button>
-		</Box>
+		</Form>
 	)
 }

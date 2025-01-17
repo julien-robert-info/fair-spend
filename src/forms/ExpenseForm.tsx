@@ -1,45 +1,24 @@
 'use client'
 import React from 'react'
-import { Alert, Box, Button, TextField } from '@mui/material'
-import { useFormState } from 'react-dom'
+import { Button, TextField } from '@mui/material'
 import { createExpense } from '@/actions/expense'
+import Form from '@/components/Form'
 
-export type ExpenseFormFields = {
-	groupId: number
-	amount?: number
-	description?: string
+type ExpenseFormProps = {
+	initialValues: {
+		groupId: number
+		amount?: number
+		description?: string
+	}
 	onSuccess?: () => void
 }
 
-export const ExpenseForm = ({
+export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 	initialValues,
-}: {
-	initialValues: ExpenseFormFields
+	onSuccess,
 }) => {
-	const [state, formAction] = useFormState(createExpense, {
-		message: '',
-	})
-
-	React.useEffect(() => {
-		if (state.message === 'success' && initialValues.onSuccess) {
-			initialValues.onSuccess()
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [state])
-
 	return (
-		<Box
-			component='form'
-			action={formAction}
-			sx={{
-				display: 'flex',
-				flexDirection: 'column',
-				gap: 1,
-			}}
-		>
-			{state.message !== '' && state.message !== 'success' && (
-				<Alert severity='error'>{state.message}</Alert>
-			)}
+		<Form action={createExpense} onSuccess={onSuccess}>
 			<TextField
 				name='groupId'
 				value={initialValues.groupId}
@@ -61,6 +40,6 @@ export const ExpenseForm = ({
 				defaultValue={initialValues.description}
 			/>
 			<Button type='submit'>Enregistrer</Button>
-		</Box>
+		</Form>
 	)
 }

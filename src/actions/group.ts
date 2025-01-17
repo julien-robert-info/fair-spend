@@ -3,6 +3,7 @@ import { Group, Prisma, ShareMode } from '@prisma/client'
 import prisma from '@/utils/prisma'
 import { authOrError } from '@/utils/auth'
 import { revalidatePath } from 'next/cache'
+import { FormAction } from '@/components/Form'
 
 export type UserDetails = {
 	name: string | null
@@ -43,7 +44,7 @@ export const getGroups = async (): Promise<GroupDetails[]> => {
 	})
 }
 
-export const upsertGroup = async (prevState: any, formData: FormData) => {
+export const upsertGroup: FormAction = async (prevState, formData) => {
 	const user = await authOrError()
 
 	const id = Number(formData.get('id'))
@@ -118,7 +119,7 @@ export const deleteGroup = async (id: number) => {
 	return { message: 'success' }
 }
 
-export const transferGroup = async (prevState: any, formData: FormData) => {
+export const transferGroup: FormAction = async (prevState, formData) => {
 	const user = await authOrError()
 
 	const id = Number(formData.get('id'))

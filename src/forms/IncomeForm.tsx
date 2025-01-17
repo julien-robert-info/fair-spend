@@ -1,41 +1,23 @@
 'use client'
 import React from 'react'
-import { Box, Button, TextField } from '@mui/material'
-import { useFormState } from 'react-dom'
+import { Button, TextField } from '@mui/material'
 import { setIncome } from '@/actions/member'
+import Form from '@/components/Form'
 
-export type IncomeFormFields = {
-	groupId: number
-	income?: number | null
+type IncomeFormProps = {
+	initialValues: {
+		groupId: number
+		income?: number | null
+	}
 	onSuccess?: () => void
 }
 
-export const IncomeForm = ({
+export const IncomeForm: React.FC<IncomeFormProps> = ({
 	initialValues,
-}: {
-	initialValues: IncomeFormFields
+	onSuccess,
 }) => {
-	const [state, formAction] = useFormState(setIncome, {
-		message: '',
-	})
-
-	React.useEffect(() => {
-		if (state.message === 'success' && initialValues.onSuccess) {
-			initialValues.onSuccess()
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [state])
-
 	return (
-		<Box
-			component='form'
-			action={formAction}
-			sx={{
-				display: 'flex',
-				flexDirection: 'column',
-				gap: 1,
-			}}
-		>
+		<Form action={setIncome} onSuccess={onSuccess}>
 			<TextField
 				name='groupId'
 				value={initialValues.groupId}
@@ -50,6 +32,6 @@ export const IncomeForm = ({
 				defaultValue={initialValues.income}
 			/>
 			<Button type='submit'>Enregistrer</Button>
-		</Box>
+		</Form>
 	)
 }

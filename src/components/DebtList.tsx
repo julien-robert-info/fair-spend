@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale'
 import UserAvatar from './UserAvatar'
-import { TransferForm, TransferFormFields } from '@/forms/TransferForm'
+import { TransferForm, TransferFormProps } from '@/forms/TransferForm'
 import { getPanelData, PanelData } from '@/utils/debt'
 import { GroupDetails } from '@/actions/group'
 
@@ -21,11 +21,8 @@ export const DebtList = ({ group }: { group: GroupDetails }) => {
 	const [data, setData] = React.useState<PanelData | undefined>()
 	const [openForm, setOpenForm] = React.useState(false)
 	const [formValues, setFormValues] = React.useState<
-		Omit<TransferFormFields, 'groupId' | 'members' | 'onSuccess'>
-	>({
-		amount: '',
-		receiver: '',
-	})
+		Omit<TransferFormProps['initialValues'], 'groupId' | 'members'>
+	>({ amount: '', receiver: '' })
 
 	React.useEffect(() => {
 		const updatedata = async (groupId: number) => {
@@ -93,8 +90,8 @@ export const DebtList = ({ group }: { group: GroupDetails }) => {
 							receiver: formValues.receiver,
 							groupId: group.id,
 							members: group.members,
-							onSuccess: () => setOpenForm(false),
 						}}
+						onSuccess={() => setOpenForm(false)}
 					/>
 				</DialogContent>
 			</Dialog>

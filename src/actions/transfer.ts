@@ -7,6 +7,7 @@ import { USD } from '@dinero.js/currencies'
 import { add, dinero, equal } from 'dinero.js'
 import { calcultatePaybacks } from '@/actions/payback'
 import { repayDebts } from './debt'
+import { FormAction } from '@/components/Form'
 
 export type TransferDetail = {
 	amount: number
@@ -39,10 +40,7 @@ export const getTransfers = async (
 	return transfers
 }
 
-export const createTransfer = async (
-	prevState: any,
-	formData: FormData
-): Promise<{ message: string; result?: Transfer }> => {
+export const createTransfer: FormAction = async (prevState, formData) => {
 	const user = await authOrError()
 
 	const groupId = Number(formData.get('groupId'))

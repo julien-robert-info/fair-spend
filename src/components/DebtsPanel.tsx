@@ -36,8 +36,8 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 				<ExpenseForm
 					initialValues={{
 						groupId: groupId,
-						onSuccess: () => setOpenForm(false),
 					}}
+					onSuccess={() => setOpenForm(false)}
 				/>
 			)
 		} else {
@@ -47,8 +47,8 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 					initialValues={{
 						groupId: groupId,
 						income: await getIncome(groupId),
-						onSuccess: () => setOpenForm(false),
 					}}
+					onSuccess={() => setOpenForm(false)}
 				/>
 			)
 		}

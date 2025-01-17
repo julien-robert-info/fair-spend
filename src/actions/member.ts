@@ -3,6 +3,7 @@ import prisma from '@/utils/prisma'
 import { authOrError } from '@/utils/auth'
 import { revalidatePath } from 'next/cache'
 import { Prisma } from '@prisma/client'
+import { FormAction } from '@/components/Form'
 
 export const joinGroup = async (id: number) => {
 	const user = await authOrError()
@@ -106,10 +107,7 @@ export const getIncome = async (groupId: number): Promise<number | null> => {
 	return member?.income ?? null
 }
 
-export const setIncome = async (
-	prevState: any,
-	formData: FormData
-): Promise<{ message: string }> => {
+export const setIncome: FormAction = async (prevState, formData) => {
 	const user = await authOrError()
 
 	const groupId = Number(formData.get('groupId'))

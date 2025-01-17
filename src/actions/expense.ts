@@ -7,6 +7,7 @@ import { Debt, Expense } from '@prisma/client'
 import { calcultatePaybacks } from '@/actions/payback'
 import { dinero, toSnapshot } from 'dinero.js'
 import { USD } from '@dinero.js/currencies'
+import { FormAction } from '@/components/Form'
 
 export type ExpenseDetail = Omit<Expense, 'id' | 'payerId' | 'groupId'> & {
 	payer: { name: string | null; image: string | null }
@@ -47,10 +48,7 @@ export const getExpenses = async (
 	return expenses
 }
 
-export const createExpense = async (
-	prevState: any,
-	formData: FormData
-): Promise<{ message: string; result?: ExpenseDetail }> => {
+export const createExpense: FormAction = async (prevState, formData) => {
 	const user = await authOrError()
 
 	const groupId = Number(formData.get('groupId'))

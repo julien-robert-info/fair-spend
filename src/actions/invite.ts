@@ -5,6 +5,7 @@ import prisma from '@/utils/prisma'
 import { Prisma } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 import { GroupDetails, UserDetails } from '@/actions/group'
+import { FormAction } from '@/components/Form'
 
 export type InviteDetail = {
 	group: Omit<GroupDetails, 'members' | 'owner' | 'isOwner'> & {
@@ -42,7 +43,7 @@ export const getInvites = async (): Promise<InviteDetail[]> => {
 	})
 }
 
-export const createInvite = async (prevState: any, formData: FormData) => {
+export const createInvite: FormAction = async (prevState, formData) => {
 	const user = await authOrError()
 
 	const groupId = Number(formData.get('groupId'))
