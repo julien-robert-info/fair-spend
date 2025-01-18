@@ -23,7 +23,7 @@ export default async function RootLayout({
 				<AppRouterCacheProvider>
 					<ThemeProvider theme={theme}>
 						<CssBaseline />
-						{session?.user && <Header user={session.user} />}
+						<Header user={session?.user} />
 						{children}
 					</ThemeProvider>
 				</AppRouterCacheProvider>

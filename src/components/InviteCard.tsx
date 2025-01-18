@@ -1,9 +1,7 @@
 'use client'
 import React from 'react'
-import { Card, CardActions, IconButton, Grid, CardProps } from '@mui/material'
+import { Card, CardActions, Grid, CardProps, Button } from '@mui/material'
 import { deleteInvite, InviteDetail } from '@/actions/invite'
-import CheckIcon from '@mui/icons-material/Check'
-import CloseIcon from '@mui/icons-material/Close'
 import GroupCardContent from './GroupCardContent'
 import { joinGroup } from '@/actions/member'
 
@@ -21,27 +19,28 @@ const InviteCard = ({ group, ...props }: InviteDetail & CardProps) => {
 		<Card {...props}>
 			<GroupCardContent
 				group={group}
-				sx={{ position: 'relative', opacity: 0.5 }}
+				isInvite={true}
+				sx={{ position: 'relative' }}
 			/>
 			<CardActions disableSpacing>
 				<Grid container justifyContent='space-around'>
 					<Grid item>
-						<IconButton
+						<Button
 							aria-label='accept'
 							color='success'
 							onClick={handleAccept}
 						>
-							<CheckIcon />
-						</IconButton>
+							Accepter
+						</Button>
 					</Grid>
 					<Grid item>
-						<IconButton
+						<Button
 							aria-label='decline'
 							color='error'
 							onClick={handleDecline}
 						>
-							<CloseIcon />
-						</IconButton>
+							Refuser
+						</Button>
 					</Grid>
 				</Grid>
 			</CardActions>

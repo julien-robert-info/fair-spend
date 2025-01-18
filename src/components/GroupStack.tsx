@@ -63,11 +63,7 @@ const GroupStack: React.FC<GroupDashboardProps> = ({
 					sx={{ height: '100%' }}
 				>
 					<CardContent>
-						<Typography
-							sx={{ fontSize: 20 }}
-							color='text.secondary'
-							gutterBottom
-						>
+						<Typography sx={{ fontSize: 20 }} gutterBottom>
 							Nouveau groupe
 						</Typography>
 						<Avatar

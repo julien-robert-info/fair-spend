@@ -26,6 +26,10 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 	const [formTitle, setFormTitle] = React.useState('Saisir une dépense')
 	const [form, setForm] = React.useState<React.ReactNode>()
 
+	if (!group) {
+		return
+	}
+
 	const handleOpenForm = async (
 		form: 'expense' | 'income',
 		groupId: number

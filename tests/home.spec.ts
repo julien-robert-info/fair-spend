@@ -9,7 +9,7 @@ test.describe('Homepage', () => {
 		await page.goto('/')
 
 		await expect(
-			page.getByRole('button', { name: /Commencer\/Se connecter/ })
+			page.getByRole('button', { name: /Commencer \/ Se connecter/ })
 		).toBeVisible()
 
 		await context.close()

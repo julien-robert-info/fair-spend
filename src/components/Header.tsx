@@ -8,13 +8,18 @@ import {
 	Menu,
 	MenuItem,
 	Toolbar,
+	Button,
+	Link,
+	Typography,
+	Breadcrumbs,
 } from '@mui/material'
 import { signOut } from 'next-auth/react'
-import HeaderTitle from './HeaderTitle'
 import { DefaultSession } from 'next-auth'
 import UserAvatar from './UserAvatar'
+import { usePathname } from 'next/navigation'
 
 const Header = ({ user }: { user: DefaultSession['user'] }) => {
+	const pathName = usePathname()
 	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
 	const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -33,38 +38,74 @@ const Header = ({ user }: { user: DefaultSession['user'] }) => {
 	return (
 		<AppBar position='static'>
 			<Toolbar>
-				<HeaderTitle />
+				<Typography
+					variant='h5'
+					color='text.primary'
+					sx={{ fontWeight: '700' }}
+				>
+					Fair spend
+				</Typography>
+				{user && (
+					<Breadcrumbs aria-label='breadcrumb' sx={{ ml: 2 }}>
+						<Typography color='text.primary'>
+							{pathName === '/' ? 'Dashboard' : pathName}
+						</Typography>
+					</Breadcrumbs>
+				)}
+				<Box sx={{ flexGrow: 1 }}></Box>
 				<Box>
-					<IconButton
-						size='large'
-						aria-label='account'
-						aria-controls='menu-appbar'
-						aria-haspopup='true'
-						aria-expanded={Boolean(anchorEl) ? 'true' : undefined}
-						onClick={handleMenu}
-						color='inherit'
-					>
-						<UserAvatar
-							user={{ name: user?.name!, image: user?.image! }}
-						/>
-					</IconButton>
-					<Menu
-						id='menu-appbar'
-						anchorEl={anchorEl}
-						anchorOrigin={{
-							vertical: 'bottom',
-							horizontal: 'right',
-						}}
-						keepMounted
-						transformOrigin={{
-							vertical: 'top',
-							horizontal: 'right',
-						}}
-						open={Boolean(anchorEl)}
-						onClose={handleClose}
-					>
-						<MenuItem onClick={handleLogout}>Logout</MenuItem>
-					</Menu>
+					{user ? (
+						<>
+							<IconButton
+								size='large'
+								aria-label='account'
+								aria-controls='menu-appbar'
+								aria-haspopup='true'
+								aria-expanded={
+									Boolean(anchorEl) ? 'true' : undefined
+								}
+								onClick={handleMenu}
+								color='inherit'
+							>
+								<UserAvatar
+									user={{
+										name: user?.name!,
+										image: user?.image!,
+									}}
+								/>
+							</IconButton>
+							<Menu
+								id='menu-appbar'
+								anchorEl={anchorEl}
+								anchorOrigin={{
+									vertical: 'bottom',
+									horizontal: 'right',
+								}}
+								keepMounted
+								transformOrigin={{
+									vertical: 'top',
+									horizontal: 'right',
+								}}
+								open={Boolean(anchorEl)}
+								onClose={handleClose}
+							>
+								<MenuItem onClick={handleLogout}>
+									Logout
+								</MenuItem>
+							</Menu>
+						</>
+					) : (
+						<Link href='/api/auth/signin'>
+							<Button
+								sx={{
+									color: 'secondary.dark',
+									bgcolor: 'white',
+								}}
+							>
+								Commencer / Se connecter
+							</Button>
+						</Link>
+					)}
 				</Box>
 			</Toolbar>
 			<Divider />

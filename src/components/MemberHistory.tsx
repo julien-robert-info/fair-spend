@@ -5,7 +5,6 @@ import {
 	AccordionDetails,
 	AccordionSummary,
 	Box,
-	IconButton,
 	List,
 	ListItem,
 	ListItemAvatar,
@@ -35,14 +34,11 @@ export const MemberHistory = ({ group }: { group: GroupDetails }) => {
 	return data?.map((item, i) => (
 		<>
 			{item.hType === 'transfer' ? (
-				<Box sx={{ px: 2, my: '12px' }}>
+				<Box key={`t${i}`} sx={{ px: 2, my: '12px' }}>
 					<Typography component='span'>
 						{`${item.sender.name} à transféré ${item.amount}€ à ${item.receiver.name}`}
 					</Typography>
-					<Typography
-						component='span'
-						sx={{ color: 'text.secondary', ml: 2 }}
-					>
+					<Typography component='span' sx={{ ml: 2 }}>
 						({item.date.toLocaleDateString()})
 					</Typography>
 				</Box>
@@ -56,10 +52,7 @@ export const MemberHistory = ({ group }: { group: GroupDetails }) => {
 						<Typography component='span'>
 							{`${item.payer.name} à dépensé ${item.amount}€`}
 						</Typography>
-						<Typography
-							component='span'
-							sx={{ color: 'text.secondary', ml: 2 }}
-						>
+						<Typography component='span' sx={{ ml: 2 }}>
 							({item.date.toLocaleDateString()})
 						</Typography>
 					</AccordionSummary>
@@ -70,16 +63,15 @@ export const MemberHistory = ({ group }: { group: GroupDetails }) => {
 								<ListItem
 									key={`e${i}d${j}`}
 									secondaryAction={
-										<IconButton
-											edge='end'
-											aria-label='repayed'
-										>
-											{debt.isRepayed ? (
-												<PriceCheckIcon />
-											) : (
-												<MoneyOffIcon />
-											)}
-										</IconButton>
+										debt.isRepayed ? (
+											<PriceCheckIcon
+												sx={{ color: 'text.secondary' }}
+											/>
+										) : (
+											<MoneyOffIcon
+												sx={{ color: 'text.secondary' }}
+											/>
+										)
 									}
 									sx={{
 										bgcolor: debt.isRepayed

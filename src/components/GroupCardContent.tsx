@@ -1,6 +1,7 @@
 'use client'
 import {
 	AvatarGroup,
+	Backdrop,
 	CardContent,
 	CardContentProps,
 	Tooltip,
@@ -14,15 +15,29 @@ import BalanceIcon from '@mui/icons-material/Balance'
 
 const GroupCardContent = ({
 	group,
+	isInvite,
 	...props
 }: {
 	group: InviteDetail['group']
+	isInvite?: Boolean
 } & CardContentProps) => {
-	//@ts-ignore
-	const isInvite = props.sx?.opacity === 0.5
-
 	return (
 		<CardContent {...props}>
+			{isInvite && (
+				<Backdrop
+					open={true}
+					sx={{
+						position: 'absolute',
+						zIndex: (theme) => theme.zIndex.tooltip + 1,
+						bgcolor: 'rgba(255, 255, 255, 0.5)',
+						alignItems: 'end',
+					}}
+				>
+					<Typography sx={{ mb: -1 }}>
+						Invitation en attente
+					</Typography>
+				</Backdrop>
+			)}
 			{group.shareMode === ShareMode.FAIR ? (
 				<Tooltip
 					title={`${
@@ -54,14 +69,9 @@ const GroupCardContent = ({
 					/>
 				</Tooltip>
 			)}
-			<Typography
-				sx={{ fontSize: 20 }}
-				color='text.secondary'
-				gutterBottom
-			>
+			<Typography sx={{ fontSize: 20 }} gutterBottom>
 				{group.name}
 			</Typography>
-
 			{group.members.length > 0 ? (
 				<AvatarGroup max={3} sx={{ justifyContent: 'center' }}>
 					{group.members.map((member) => (
