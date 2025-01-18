@@ -1,7 +1,8 @@
 'use client'
 import React from 'react'
 import { useFormState } from 'react-dom'
-import { Alert, Backdrop, Box, CircularProgress } from '@mui/material'
+import { Alert, Box } from '@mui/material'
+import FormLoader from './FormLoader'
 
 type FormState = {
 	message: string
@@ -20,7 +21,7 @@ type FormProps = {
 }
 
 const Form: React.FC<FormProps> = ({ children, action, onSuccess }) => {
-	const [state, formAction, isPending] = useFormState(action, {
+	const [state, formAction] = useFormState(action, {
 		message: '',
 	})
 
@@ -36,14 +37,13 @@ const Form: React.FC<FormProps> = ({ children, action, onSuccess }) => {
 			component='form'
 			action={formAction}
 			sx={{
+				position: 'relative',
 				display: 'flex',
 				flexDirection: 'column',
 				gap: 1,
 			}}
 		>
-			<Backdrop open={isPending}>
-				<CircularProgress />
-			</Backdrop>
+			<FormLoader />
 			{state.message !== '' && state.message !== 'success' && (
 				<Alert severity='error'>{state.message}</Alert>
 			)}
