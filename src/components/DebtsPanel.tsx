@@ -61,7 +61,14 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 
 	return (
 		<Paper
-			sx={{ minHeight: '10em', width: '97vw', my: 2, mx: 'auto', p: 2 }}
+			sx={{
+				position: 'relative',
+				minHeight: '10em',
+				width: '97vw',
+				my: 2,
+				mx: 'auto',
+				p: 2,
+			}}
 		>
 			{group && (
 				<>

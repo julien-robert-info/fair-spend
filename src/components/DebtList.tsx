@@ -1,6 +1,8 @@
 'use client'
 import React from 'react'
 import {
+	Backdrop,
+	CircularProgress,
 	Dialog,
 	DialogContent,
 	DialogTitle,
@@ -36,6 +38,16 @@ export const DebtList = ({ group }: { group: GroupDetails }) => {
 
 	return (
 		<>
+			<Backdrop
+				open={!data}
+				sx={{
+					position: 'absolute',
+					zIndex: (theme) => theme.zIndex.tooltip + 1,
+					bgcolor: 'rgba(255, 255, 255, 0.5)',
+				}}
+			>
+				<CircularProgress />
+			</Backdrop>
 			{data && (
 				<>
 					<Typography>{`Solde : ${data.balance}€`}</Typography>
