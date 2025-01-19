@@ -13,7 +13,7 @@ type ExpenseFormProps = {
 	onSuccess?: () => void
 }
 
-export const ExpenseForm: React.FC<ExpenseFormProps> = ({
+const ExpenseForm: React.FC<ExpenseFormProps> = ({
 	initialValues,
 	onSuccess,
 }) => {
@@ -43,3 +43,5 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 		</Form>
 	)
 }
+
+export default ExpenseForm

@@ -22,10 +22,7 @@ export type GroupFormProps = {
 	onSuccess?: (group?: Group) => void
 }
 
-export const GroupForm: React.FC<GroupFormProps> = ({
-	initialValues,
-	onSuccess,
-}) => {
+const GroupForm: React.FC<GroupFormProps> = ({ initialValues, onSuccess }) => {
 	const [mode, setMode] = React.useState<ShareMode | ''>(
 		initialValues.shareMode ?? ''
 	)
@@ -68,3 +65,5 @@ export const GroupForm: React.FC<GroupFormProps> = ({
 		</Form>
 	)
 }
+
+export default GroupForm

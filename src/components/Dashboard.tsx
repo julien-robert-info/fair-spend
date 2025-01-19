@@ -14,7 +14,7 @@ import AddIcon from '@mui/icons-material/Add'
 import { GroupDetails } from '@/actions/group'
 import { InviteDetail } from '@/actions/invite'
 import GroupStack from './GroupStack'
-import { GroupForm, GroupFormProps } from '@/forms/GroupForm'
+import GroupForm, { GroupFormProps } from '@/forms/GroupForm'
 import GroupCarousel from './GroupCarousel'
 import DebtsPanel from './DebtsPanel'
 

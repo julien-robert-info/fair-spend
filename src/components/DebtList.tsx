@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale'
 import UserAvatar from './UserAvatar'
-import { TransferForm, TransferFormProps } from '@/forms/TransferForm'
+import TransferForm, { TransferFormProps } from '@/forms/TransferForm'
 import { getPanelData, PanelData } from '@/utils/debt'
 import { GroupDetails } from '@/actions/group'
 

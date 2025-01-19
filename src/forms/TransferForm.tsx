@@ -25,7 +25,7 @@ export type TransferFormProps = {
 	onSuccess?: () => void
 }
 
-export const TransferForm: React.FC<TransferFormProps> = ({
+const TransferForm: React.FC<TransferFormProps> = ({
 	initialValues,
 	onSuccess,
 }) => {
@@ -80,3 +80,5 @@ export const TransferForm: React.FC<TransferFormProps> = ({
 		</Form>
 	)
 }
+
+export default TransferForm

@@ -12,7 +12,7 @@ type IncomeFormProps = {
 	onSuccess?: () => void
 }
 
-export const IncomeForm: React.FC<IncomeFormProps> = ({
+const IncomeForm: React.FC<IncomeFormProps> = ({
 	initialValues,
 	onSuccess,
 }) => {
@@ -35,3 +35,5 @@ export const IncomeForm: React.FC<IncomeFormProps> = ({
 		</Form>
 	)
 }
+
+export default IncomeForm

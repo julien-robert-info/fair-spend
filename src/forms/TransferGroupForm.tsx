@@ -20,7 +20,7 @@ export type TransferGroupFormProps = {
 	onSuccess?: () => void
 }
 
-export const TransferGroupForm: React.FC<TransferGroupFormProps> = ({
+const TransferGroupForm: React.FC<TransferGroupFormProps> = ({
 	initialValues,
 	onSuccess,
 }) => {
@@ -69,3 +69,5 @@ export const TransferGroupForm: React.FC<TransferGroupFormProps> = ({
 		</Form>
 	)
 }
+
+export default TransferGroupForm

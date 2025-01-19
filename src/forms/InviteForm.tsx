@@ -9,7 +9,7 @@ export type InviteFormProps = {
 	onSuccess?: () => void
 }
 
-export const InviteForm: React.FC<InviteFormProps> = ({
+const InviteForm: React.FC<InviteFormProps> = ({
 	initialValues,
 	onSuccess,
 }) => {
@@ -32,3 +32,5 @@ export const InviteForm: React.FC<InviteFormProps> = ({
 		</Form>
 	)
 }
+
+export default InviteForm
