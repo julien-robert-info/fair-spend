@@ -25,7 +25,7 @@ test.describe('Groups features', () => {
 		await page.goto('/')
 		await page
 			.getByRole('button', {
-				name: isMobile ? 'add_group' : 'Nouveau groupe',
+				name: isMobile ? 'add_group' : 'Nouveau budget',
 			})
 			.click()
 
@@ -74,7 +74,7 @@ test.describe('Groups features', () => {
 		// create
 		await page
 			.getByRole('button', {
-				name: isMobile ? 'add_group' : 'Nouveau groupe',
+				name: isMobile ? 'add_group' : 'Nouveau budget',
 			})
 			.click()
 		await page

@@ -38,7 +38,7 @@ const GroupCard = ({
 	const [openConfirm, setOpenConfirm] = React.useState(false)
 	const [confirmError, setConfirmError] = React.useState<string | undefined>()
 	const [confirmText, setConfirmText] = React.useState(
-		'Souhaitez vous quitter ce groupe'
+		'Souhaitez vous quitter ce budget partagé'
 	)
 	const [confirmAction, setConfirmAction] =
 		React.useState<() => Promise<void>>()
@@ -50,10 +50,10 @@ const GroupCard = ({
 
 	const handleOpenConfirm = (action: 'delete' | 'leave') => {
 		if (action === 'delete') {
-			setConfirmText('Souhaitez vous supprimer ce groupe')
+			setConfirmText('Souhaitez vous supprimer ce budget partagé')
 			setConfirmAction(() => handleDelete)
 		} else {
-			setConfirmText('Souhaitez vous quitter ce groupe')
+			setConfirmText('Souhaitez vous quitter ce budget partagé')
 			setConfirmAction(() => handleLeave)
 		}
 		setConfirmError(undefined)
@@ -72,7 +72,9 @@ const GroupCard = ({
 				/>
 			)
 		} else {
-			setFormTitle('Souhaitez vous transférer et quitter ce groupe')
+			setFormTitle(
+				'Souhaitez vous transférer et quitter ce budget partagé'
+			)
 			setForm(
 				<TransferGroupForm
 					initialValues={{

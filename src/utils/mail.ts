@@ -103,8 +103,8 @@ const mailContent = (groupName: string) => `<!DOCTYPE html>
                                 <table border="0" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td>
-                                            <h1>Rejoignez le groupe de dépenses de ${groupName}</h1>
-                                            <p>[Nom de l'expéditeur] vous invite à rejoindre le groupe de partage de dépenses sur FairSpend.</p>
+                                            <h1>Rejoignez le budget partagé ${groupName}</h1>
+                                            <p>[Nom de l'expéditeur] vous invite à rejoindre le budget partagé sur FairSpend.</p>
                                             <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
                                                 <tbody>
                                                     <tr>
@@ -113,7 +113,7 @@ const mailContent = (groupName: string) => `<!DOCTYPE html>
                                                                 <tbody>
                                                                     <tr>
                                                                         <td>
-																			<a href="${process.env.NEXTAUTH_URL}" target="_blank">Rejoindre le groupe</a>
+																			<a href="${process.env.NEXTAUTH_URL}" target="_blank">Rejoindre le budget partagé</a>
 																		</td>
                                                                     </tr>
                                                                 </tbody>

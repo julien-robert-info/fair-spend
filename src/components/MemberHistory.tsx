@@ -45,76 +45,72 @@ export const MemberHistory = ({ group }: { group: GroupDetails }) => {
 			>
 				<CircularProgress />
 			</Backdrop>
-			{data?.map((item, i) => (
-				<>
-					{item.hType === 'transfer' ? (
-						<Box key={`t${i}`} sx={{ px: 2, my: '12px' }}>
+			{data?.map((item, i) =>
+				item.hType === 'transfer' ? (
+					<Box key={`t${i}`} sx={{ px: 2, my: '12px' }}>
+						<Typography component='span'>
+							{`${item.sender.name} à transféré ${item.amount}€ à ${item.receiver.name}`}
+						</Typography>
+						<Typography component='span' sx={{ ml: 2 }}>
+							({item.date.toLocaleDateString()})
+						</Typography>
+					</Box>
+				) : (
+					<Accordion key={`e${i}`}>
+						<AccordionSummary
+							expandIcon={<ExpandMoreIcon />}
+							aria-controls={`panel${i}-content`}
+							id={`panel${i}-header`}
+						>
 							<Typography component='span'>
-								{`${item.sender.name} à transféré ${item.amount}€ à ${item.receiver.name}`}
+								{`${item.payer.name} à dépensé ${item.amount}€`}
 							</Typography>
 							<Typography component='span' sx={{ ml: 2 }}>
 								({item.date.toLocaleDateString()})
 							</Typography>
-						</Box>
-					) : (
-						<Accordion key={`e${i}`}>
-							<AccordionSummary
-								expandIcon={<ExpandMoreIcon />}
-								aria-controls={`panel${i}-content`}
-								id={`panel${i}-header`}
-							>
-								<Typography component='span'>
-									{`${item.payer.name} à dépensé ${item.amount}€`}
-								</Typography>
-								<Typography component='span' sx={{ ml: 2 }}>
-									({item.date.toLocaleDateString()})
-								</Typography>
-							</AccordionSummary>
-							<AccordionDetails>
-								<Typography>
-									description: {item.description}
-								</Typography>
-								<List>
-									{item.debts.map((debt, j) => (
-										<ListItem
-											key={`e${i}d${j}`}
-											secondaryAction={
-												debt.isRepayed ? (
-													<PriceCheckIcon
-														sx={{
-															color: 'text.secondary',
-														}}
-													/>
-												) : (
-													<MoneyOffIcon
-														sx={{
-															color: 'text.secondary',
-														}}
-													/>
-												)
-											}
-											sx={{
-												bgcolor: debt.isRepayed
-													? 'success.light'
-													: 'error.light',
-											}}
-										>
-											<ListItemAvatar>
-												<UserAvatar
-													user={debt.debtor}
+						</AccordionSummary>
+						<AccordionDetails>
+							<Typography>
+								description: {item.description}
+							</Typography>
+							<List>
+								{item.debts.map((debt, j) => (
+									<ListItem
+										key={`e${i}d${j}`}
+										secondaryAction={
+											debt.isRepayed ? (
+												<PriceCheckIcon
+													sx={{
+														color: 'text.secondary',
+													}}
 												/>
-											</ListItemAvatar>
-											<ListItemText
-												primary={`${debt.amount}€`}
-											/>
-										</ListItem>
-									))}
-								</List>
-							</AccordionDetails>
-						</Accordion>
-					)}
-				</>
-			))}
+											) : (
+												<MoneyOffIcon
+													sx={{
+														color: 'text.secondary',
+													}}
+												/>
+											)
+										}
+										sx={{
+											bgcolor: debt.isRepayed
+												? 'success.light'
+												: 'error.light',
+										}}
+									>
+										<ListItemAvatar>
+											<UserAvatar user={debt.debtor} />
+										</ListItemAvatar>
+										<ListItemText
+											primary={`${debt.amount}€`}
+										/>
+									</ListItem>
+								))}
+							</List>
+						</AccordionDetails>
+					</Accordion>
+				)
+			)}
 		</>
 	)
 }

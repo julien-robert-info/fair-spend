@@ -36,7 +36,7 @@ export const joinGroup = async (id: number) => {
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
 			if (error.code === 'P2025') {
-				return { message: 'Groupe non trouvé' }
+				return { message: 'Budget partagé non trouvé' }
 			}
 		}
 		throw error
@@ -79,7 +79,7 @@ export const leaveGroup = async (id: number) => {
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
 			if (error.code === 'P2025') {
-				return { message: 'Groupe non trouvé' }
+				return { message: 'Budget partagé non trouvé' }
 			}
 		}
 		throw error

@@ -109,7 +109,7 @@ export const deleteGroup = async (id: number) => {
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
 			if (error.code === 'P2025') {
-				return { message: 'Groupe non trouvé' }
+				return { message: 'Budget partagé non trouvé' }
 			}
 		}
 		throw error
@@ -163,7 +163,7 @@ export const transferGroup: FormAction = async (prevState, formData) => {
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
 			if (error.code === 'P2025') {
-				return { message: 'Groupe non trouvé' }
+				return { message: 'Budget partagé non trouvé' }
 			}
 		}
 		throw error

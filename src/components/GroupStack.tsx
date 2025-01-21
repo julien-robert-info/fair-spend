@@ -64,7 +64,7 @@ const GroupStack: React.FC<GroupDashboardProps> = ({
 				>
 					<CardContent>
 						<Typography sx={{ fontSize: 20 }} gutterBottom>
-							Nouveau groupe
+							Nouveau budget
 						</Typography>
 						<Avatar
 							aria-label='add'

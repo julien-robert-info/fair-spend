@@ -4,7 +4,9 @@ import { SwipeToLocator } from '@/utils/test'
 test('Show Groups Dashboard', async ({ page }) => {
 	await page.goto('/')
 
-	await expect(page.getByRole('heading', { name: /Groupes/ })).toBeVisible()
+	await expect(
+		page.getByRole('heading', { name: /Budgets partagés/ })
+	).toBeVisible()
 })
 
 test('Show debt panel when select group', async ({ page, isMobile }) => {

@@ -9,6 +9,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogTitle,
+	Paper,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import { GroupDetails } from '@/actions/group'
@@ -31,7 +32,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 	const [formValues, setFormValues] = React.useState<GroupFormProps>({
 		initialValues: {},
 	})
-	const [formTitle, setFormTitle] = React.useState('Nouveau groupe')
+	const [formTitle, setFormTitle] = React.useState('Nouveau budget partagé')
 	const [currentGroup, setCurrentGroup] = React.useState<number | undefined>()
 
 	React.useEffect(() => {
@@ -44,7 +45,9 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 	const handleOpenForm = (id?: number) => {
 		const group = groups.find((group: GroupDetails) => group.id === id)
 
-		setFormTitle(group ? 'Modifier groupe' : 'Nouveau groupe')
+		setFormTitle(
+			group ? 'Modifier le budget partagé' : 'Nouveau budget partagé'
+		)
 		setFormValues({
 			initialValues: {
 				id: group?.id,
@@ -70,7 +73,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 					p: 1,
 				}}
 			>
-				<Typography variant='h5'>Groupes</Typography>
+				<Typography variant='h5'>Budgets partagés</Typography>
 				{didmount && !isDesktop && (
 					<Fab
 						size='small'
@@ -101,6 +104,22 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 						handleOpenForm={handleOpenForm}
 					/>
 				)
+			)}
+			{invites.length === 0 && groups.length === 0 && (
+				<Paper
+					sx={{
+						position: 'relative',
+						minHeight: '10em',
+						width: '97vw',
+						my: 2,
+						mx: 'auto',
+						p: 2,
+					}}
+				>
+					<Typography component={'h4'}>
+						Créez un Budget et invitez des membres pour commencer
+					</Typography>
+				</Paper>
 			)}
 			<DebtsPanel
 				group={groups.find((group) => group.id === currentGroup)}
