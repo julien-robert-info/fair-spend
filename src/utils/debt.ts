@@ -1,7 +1,7 @@
 import { DefaultSession } from 'next-auth'
 import { DebtDetails, getDebts, getOwnedDebts } from '@/actions/debt'
 import { USD } from '@dinero.js/currencies'
-import { add, dinero, isNegative, subtract } from 'dinero.js'
+import { add, Dinero, dinero, isNegative, subtract } from 'dinero.js'
 import { dineroFormat } from '@/utils/dinero'
 
 export type PanelData = {
@@ -15,6 +15,36 @@ export type PanelData = {
 	}[]
 }
 
+const getDebtNetAmount = (debt: DebtDetails): Dinero<number> => {
+	return subtract(
+		dinero({ amount: debt.amount, currency: USD }),
+		add(
+			debt.paybacks?.reduce(
+				(acc, { amount }) =>
+					add(
+						acc,
+						dinero({
+							amount: amount,
+							currency: USD,
+						})
+					),
+				dinero({ amount: 0, currency: USD })
+			) ?? dinero({ amount: 0, currency: USD }),
+			debt.payingBack?.reduce(
+				(acc, { amount }) =>
+					add(
+						acc,
+						dinero({
+							amount: amount,
+							currency: USD,
+						})
+					),
+				dinero({ amount: 0, currency: USD })
+			) ?? dinero({ amount: 0, currency: USD })
+		)
+	)
+}
+
 export const getPanelData = async (groupId: number): Promise<PanelData> => {
 	const debts = await getDebts(groupId)
 	const ownedDebts = await getOwnedDebts(groupId)
@@ -22,15 +52,13 @@ export const getPanelData = async (groupId: number): Promise<PanelData> => {
 	const balance = dineroFormat(
 		subtract(
 			ownedDebts
-				.map((ownedDebt) =>
-					dinero({ amount: ownedDebt.amount, currency: USD })
-				)
+				.map((ownedDebt) => getDebtNetAmount(ownedDebt))
 				.reduce(
 					(acc, amount) => add(acc, amount),
 					dinero({ amount: 0, currency: USD })
 				),
 			debts
-				.map((debt) => dinero({ amount: debt.amount, currency: USD }))
+				.map((debt) => getDebtNetAmount(debt))
 				.reduce(
 					(acc, amount) => add(acc, amount),
 					dinero({ amount: 0, currency: USD })
@@ -47,14 +75,14 @@ export const getPanelData = async (groupId: number): Promise<PanelData> => {
 		const balance = subtract(
 			ownedDebts
 				.filter((debt) => debt.debtor?.name === name)
-				.map((debt) => dinero({ amount: debt.amount, currency: USD }))
+				.map((debt) => getDebtNetAmount(debt))
 				.reduce(
 					(acc, amount) => add(acc, amount),
 					dinero({ amount: 0, currency: USD })
 				),
 			debts
 				.filter((debt) => debt.expense.payer?.name === name)
-				.map((debt) => dinero({ amount: debt.amount, currency: USD }))
+				.map((debt) => getDebtNetAmount(debt))
 				.reduce(
 					(acc, amount) => add(acc, amount),
 					dinero({ amount: 0, currency: USD })

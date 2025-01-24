@@ -14,12 +14,12 @@ const clearDb = async () => {
 	await prisma.group.deleteMany({})
 }
 
-const getUsers = async () => {
+const getAllUsers = async () => {
 	return await prisma.user.findMany({})
 }
 
 const createGroups = async () => {
-	const users = await getUsers()
+	const users = await getAllUsers()
 	const me = users.find((user) => user.name === 'julien robert')
 	const bob = users.find((user) => user.name === 'Bob')
 	const alice = users.find((user) => user.name === 'Alice')
@@ -92,7 +92,7 @@ const createGroups = async () => {
 }
 
 const createExpenses = async (groups: number[]) => {
-	const users = await getUsers()
+	const users = await getAllUsers()
 
 	for (let i = 0; i < groups.length; i++) {
 		const expenseCount = randNumber({ min: 1, max: 3 })

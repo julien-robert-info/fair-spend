@@ -4,7 +4,14 @@ import { shuffleArray } from '@/utils'
 import prisma from '@/utils/prisma'
 import { ShareMode } from '@prisma/client'
 import { USD } from '@dinero.js/currencies'
-import { add, allocate, Dinero, dinero, equal, toSnapshot } from 'dinero.js'
+import {
+	add,
+	allocate,
+	Dinero,
+	dinero,
+	greaterThanOrEqual,
+	toSnapshot,
+} from 'dinero.js'
 
 export type DebtDetails = {
 	amount: number
@@ -14,6 +21,8 @@ export type DebtDetails = {
 		payer?: { name: string | null; image: string | null }
 	}
 	debtor?: { name: string | null; image: string | null }
+	paybacks?: { amount: number }[]
+	payingBack?: { amount: number }[]
 }
 
 export const getDebts = async (groupId: number): Promise<DebtDetails[]> => {
@@ -29,6 +38,8 @@ export const getDebts = async (groupId: number): Promise<DebtDetails[]> => {
 					payer: { select: { name: true, image: true, email: true } },
 				},
 			},
+			paybacks: { select: { amount: true } },
+			payingBack: { select: { amount: true } },
 		},
 		where: {
 			isRepayed: false,
@@ -53,6 +64,8 @@ export const getOwnedDebts = async (
 					description: true,
 				},
 			},
+			paybacks: { select: { amount: true } },
+			payingBack: { select: { amount: true } },
 		},
 		where: {
 			isRepayed: false,
@@ -117,17 +130,25 @@ export const repayDebts = async (debtIds: number[]) => {
 					amount: true,
 					isRepayed: true,
 					paybacks: { select: { amount: true } },
+					payingBack: { select: { amount: true } },
 				},
 				where: { id: debtId },
 			})
 
-			const isRepayed = equal(
-				dinero({ amount: debt.amount, currency: USD }),
-				debt.paybacks.reduce(
-					(acc, { amount }) =>
-						add(acc, dinero({ amount: amount, currency: USD })),
-					dinero({ amount: 0, currency: USD })
-				)
+			const isRepayed = greaterThanOrEqual(
+				add(
+					debt.paybacks.reduce(
+						(acc, { amount }) =>
+							add(acc, dinero({ amount: amount, currency: USD })),
+						dinero({ amount: 0, currency: USD })
+					),
+					debt.payingBack.reduce(
+						(acc, { amount }) =>
+							add(acc, dinero({ amount: amount, currency: USD })),
+						dinero({ amount: 0, currency: USD })
+					)
+				),
+				dinero({ amount: debt.amount, currency: USD })
 			)
 
 			if (isRepayed !== debt.isRepayed) {
