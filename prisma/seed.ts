@@ -95,7 +95,7 @@ const createExpenses = async (groups: number[]) => {
 	const users = await getAllUsers()
 
 	for (let i = 0; i < groups.length; i++) {
-		const expenseCount = randNumber({ min: 1, max: 3 })
+		const expenseCount = randNumber({ min: 3, max: 10 })
 		for (let j = 0; j < expenseCount; j++) {
 			const amount = randNumber({ min: 100, max: 10000 })
 			const payer = rand(users)

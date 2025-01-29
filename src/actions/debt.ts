@@ -3,15 +3,8 @@ import { authOrError } from '@/utils/auth'
 import { shuffleArray } from '@/utils'
 import prisma from '@/utils/prisma'
 import { ShareMode } from '@prisma/client'
-import { USD } from '@dinero.js/currencies'
-import {
-	add,
-	allocate,
-	Dinero,
-	dinero,
-	greaterThanOrEqual,
-	toSnapshot,
-} from 'dinero.js'
+import { allocate, Dinero, isNegative, isZero, toSnapshot } from 'dinero.js'
+import { getDebtNetAmount } from '@/utils/debt'
 
 export type DebtDetails = {
 	amount: number
@@ -135,21 +128,8 @@ export const repayDebts = async (debtIds: number[]) => {
 				where: { id: debtId },
 			})
 
-			const isRepayed = greaterThanOrEqual(
-				add(
-					debt.paybacks.reduce(
-						(acc, { amount }) =>
-							add(acc, dinero({ amount: amount, currency: USD })),
-						dinero({ amount: 0, currency: USD })
-					),
-					debt.payingBack.reduce(
-						(acc, { amount }) =>
-							add(acc, dinero({ amount: amount, currency: USD })),
-						dinero({ amount: 0, currency: USD })
-					)
-				),
-				dinero({ amount: debt.amount, currency: USD })
-			)
+			const netAmount = getDebtNetAmount(debt)
+			const isRepayed = isNegative(netAmount) || isZero(netAmount)
 
 			if (isRepayed !== debt.isRepayed) {
 				await prisma.debt.update({

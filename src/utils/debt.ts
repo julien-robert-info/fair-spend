@@ -15,7 +15,9 @@ export type PanelData = {
 	}[]
 }
 
-const getDebtNetAmount = (debt: DebtDetails): Dinero<number> => {
+export const getDebtNetAmount = (
+	debt: Omit<DebtDetails, 'expense'>
+): Dinero<number> => {
 	return subtract(
 		dinero({ amount: debt.amount, currency: USD }),
 		add(

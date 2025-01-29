@@ -99,21 +99,26 @@ export const createExpense: FormAction = async (prevState, formData) => {
 			},
 		})
 
-		const paybacks = await Promise.all(
-			expense.debts.map(
-				async (debt) =>
-					await calcultatePaybacks(
-						groupId,
-						debt.amount,
-						user?.email!,
-						debt.debtor.email,
-						debt.id
-					)
+		const paybacks = (
+			await Promise.all(
+				expense.debts.map(
+					async (debt) =>
+						await calcultatePaybacks(
+							groupId,
+							debt.amount,
+							user?.email!,
+							debt.debtor.email,
+							debt.id
+						)
+				)
 			)
-		)
+		).flat()
 
-		await prisma.payback.createMany({ data: paybacks.flat() })
-		await repayDebts(expense.debts.map((debt) => debt.id))
+		await prisma.payback.createMany({ data: paybacks })
+		await repayDebts([
+			...expense.debts.map((debt) => debt.id),
+			...paybacks.map((payback) => payback.debtId),
+		])
 	} catch (error) {
 		throw error
 	}

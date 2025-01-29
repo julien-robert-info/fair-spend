@@ -1,4 +1,5 @@
 'use server'
+import { getDebtNetAmount } from '@/utils/debt'
 import prisma from '@/utils/prisma'
 import { USD } from '@dinero.js/currencies'
 import {
@@ -30,6 +31,7 @@ export const calcultatePaybacks = async (
 			id: true,
 			amount: true,
 			paybacks: { select: { amount: true } },
+			payingBack: { select: { amount: true } },
 		},
 		where: {
 			expense: { groupId: groupId, payer: { email: receiver } },
@@ -45,14 +47,7 @@ export const calcultatePaybacks = async (
 	let i = 0
 	while (lessThan(paybacksAmount, totalAmount) && debts.length > i) {
 		const debt = debts[i]
-		const remainingAmount = subtract(
-			dinero({ amount: debt.amount, currency: USD }),
-			debt.paybacks.reduce(
-				(acc, { amount }) =>
-					add(acc, dinero({ amount: amount, currency: USD })),
-				dinero({ amount: 0, currency: USD })
-			)
-		)
+		const remainingAmount = getDebtNetAmount(debt)
 
 		if (isPositive(remainingAmount) && !isZero(remainingAmount)) {
 			const paybackAmount = lessThanOrEqual(
