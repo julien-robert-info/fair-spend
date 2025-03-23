@@ -60,10 +60,10 @@ export const createExpense: FormAction = async (prevState, formData) => {
 		return { message: 'Montant invalide' }
 	}
 
-	const amount = dinero({ amount: rawAmount * 100, currency: USD })
-
 	let expense
 	try {
+		const amount = dinero({ amount: rawAmount * 100, currency: USD })
+
 		expense = await prisma.expense.create({
 			data: {
 				description,
@@ -99,26 +99,26 @@ export const createExpense: FormAction = async (prevState, formData) => {
 			},
 		})
 
-		const paybacks = (
-			await Promise.all(
-				expense.debts.map(
-					async (debt) =>
-						await calcultatePaybacks(
-							groupId,
-							debt.amount,
-							user?.email!,
-							debt.debtor.email,
-							debt.id
-						)
-				)
-			)
-		).flat()
+		// const paybacks = (
+		// 	await Promise.all(
+		// 		expense.debts.map(
+		// 			async (debt) =>
+		// 				await calcultatePaybacks(
+		// 					groupId,
+		// 					debt.amount,
+		// 					user?.email!,
+		// 					debt.debtor.email,
+		// 					debt.id
+		// 				)
+		// 		)
+		// 	)
+		// ).flat()
 
-		await prisma.payback.createMany({ data: paybacks })
-		await repayDebts([
-			...expense.debts.map((debt) => debt.id),
-			...paybacks.map((payback) => payback.debtId),
-		])
+		// await prisma.payback.createMany({ data: paybacks })
+		// await repayDebts([
+		// 	...expense.debts.map((debt) => debt.id),
+		// 	...paybacks.map((payback) => payback.debtId),
+		// ])
 	} catch (error) {
 		throw error
 	}
