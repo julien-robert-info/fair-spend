@@ -2,12 +2,12 @@
 import prisma from '@/utils/prisma'
 import { authOrError } from '@/utils/auth'
 import { revalidatePath } from 'next/cache'
-import { Transfer } from '@prisma/client'
 import { USD } from '@dinero.js/currencies'
 import { add, dinero, equal } from 'dinero.js'
 import { calcultatePaybacks } from '@/actions/payback'
 import { repayDebts } from './debt'
 import { FormAction } from '@/components/Form'
+import * as Sentry from '@sentry/nextjs'
 
 export type TransferDetail = {
 	amount: number
@@ -41,58 +41,66 @@ export const getTransfers = async (
 }
 
 export const createTransfer: FormAction = async (prevState, formData) => {
-	const user = await authOrError()
+	return await Sentry.withServerActionInstrumentation(
+		'createExpense',
+		{
+			formData,
+		},
+		async () => {
+			const user = await authOrError()
 
-	const groupId = Number(formData.get('groupId'))
-	const receiver = formData.get('receiver') as string
-	const rawAmount = Number(
-		(formData.get('amount') as string).replace(',', '.')
-	)
-	if (isNaN(rawAmount) || rawAmount <= 0) {
-		return { message: 'Montant invalide' }
-	}
+			const groupId = Number(formData.get('groupId'))
+			const receiver = formData.get('receiver') as string
+			const rawAmount = Number(
+				(formData.get('amount') as string).replace(',', '.')
+			)
+			if (isNaN(rawAmount) || rawAmount <= 0) {
+				return { message: 'Montant invalide' }
+			}
 
-	const amount = rawAmount * 100
+			const amount = Math.round(rawAmount * 100)
 
-	let transfer
-	try {
-		const paybacks = await calcultatePaybacks(
-			groupId,
-			amount,
-			user?.email!,
-			receiver
-		)
+			let transfer
+			try {
+				const paybacks = await calcultatePaybacks(
+					groupId,
+					amount,
+					user?.email!,
+					receiver
+				)
 
-		const isConsumed = equal(
-			paybacks.reduce(
-				(acc, { amount }) =>
-					add(acc, dinero({ amount: amount, currency: USD })),
-				dinero({ amount: 0, currency: USD })
-			),
-			dinero({ amount: amount, currency: USD })
-		)
+				const isConsumed = equal(
+					paybacks.reduce(
+						(acc, { amount }) =>
+							add(acc, dinero({ amount: amount, currency: USD })),
+						dinero({ amount: 0, currency: USD })
+					),
+					dinero({ amount: amount, currency: USD })
+				)
 
-		transfer = await prisma.transfer.create({
-			data: {
-				amount,
-				date: new Date(),
-				group: { connect: { id: groupId } },
-				sender: { connect: { email: user?.email! } },
-				receiver: { connect: { email: receiver } },
-				paybacks: {
-					createMany: {
-						data: paybacks,
+				transfer = await prisma.transfer.create({
+					data: {
+						amount,
+						date: new Date(),
+						group: { connect: { id: groupId } },
+						sender: { connect: { email: user?.email! } },
+						receiver: { connect: { email: receiver } },
+						paybacks: {
+							createMany: {
+								data: paybacks,
+							},
+						},
+						isConsumed: isConsumed,
 					},
-				},
-				isConsumed: isConsumed,
-			},
-		})
+				})
 
-		await repayDebts(paybacks.map((payback) => payback.debtId))
-	} catch (error) {
-		throw error
-	}
-	revalidatePath('/')
+				await repayDebts(paybacks.map((payback) => payback.debtId))
+			} catch (error) {
+				throw error
+			}
+			revalidatePath('/')
 
-	return { message: 'success', result: transfer }
+			return { message: 'success', result: transfer }
+		}
+	)
 }
