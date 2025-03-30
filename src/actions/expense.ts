@@ -64,10 +64,12 @@ export const createExpense: FormAction = async (prevState, formData) => {
 				(formData.get('amount') as string).replace(',', '.')
 			)
 			if (isNaN(rawAmount) || rawAmount <= 0) {
-				return { message: 'Montant invalide' }
+				return {
+					message: `Montant invalide : ${formData.get('amount')}`,
+				}
 			}
 			const amount = dinero({
-				amount: rawAmount * 100,
+				amount: Math.round(rawAmount * 100),
 				currency: USD,
 			})
 
