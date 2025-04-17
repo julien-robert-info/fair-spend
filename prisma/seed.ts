@@ -64,9 +64,9 @@ const createGroups = async () => {
 			members: {
 				createMany: {
 					data: [
-						{ userEmail: me?.email ?? '', income: 2000 },
-						{ userEmail: bob?.email ?? '', income: 1000 },
-						{ userEmail: alice?.email ?? '', income: 1500 },
+						{ userEmail: me?.email ?? '', income: 200000 },
+						{ userEmail: bob?.email ?? '', income: 100000 },
+						{ userEmail: alice?.email ?? '', income: 150000 },
 					],
 				},
 			},

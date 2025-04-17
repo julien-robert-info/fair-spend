@@ -42,7 +42,7 @@ export const getTransfers = async (
 
 export const createTransfer: FormAction = async (prevState, formData) => {
 	return await Sentry.withServerActionInstrumentation(
-		'createExpense',
+		'createTransfer',
 		{
 			formData,
 		},

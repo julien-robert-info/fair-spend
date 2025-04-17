@@ -44,7 +44,10 @@ const TransferForm: React.FC<TransferFormProps> = ({
 			/>
 			<TextField
 				name='amount'
-				type='text'
+				type='number'
+				inputProps={{
+					step: 0.01,
+				}}
 				label='Montant'
 				variant='standard'
 				required={true}

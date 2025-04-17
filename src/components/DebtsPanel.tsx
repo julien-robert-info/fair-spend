@@ -11,6 +11,8 @@ import {
 import SettingsIcon from '@mui/icons-material/Settings'
 import HistoryIcon from '@mui/icons-material/History'
 import CloseIcon from '@mui/icons-material/Close'
+import { dinero } from 'dinero.js'
+import { USD } from '@dinero.js/currencies'
 import { GroupDetails } from '@/actions/group'
 import { ShareMode } from '@prisma/client'
 import IncomeForm from '@/forms/IncomeForm'
@@ -18,6 +20,7 @@ import { getIncome } from '@/actions/member'
 import { DebtList } from '@/components/DebtList'
 import { MemberHistory } from '@/components/MemberHistory'
 import GroupMenu from './GroupMenu'
+import { dineroFormat } from '@/utils/dinero'
 
 const DebtsPanel = ({
 	group,
@@ -28,7 +31,7 @@ const DebtsPanel = ({
 }) => {
 	const [tab, setTab] = React.useState(0)
 	const [openForm, setOpenForm] = React.useState(false)
-	const [income, setIncome] = React.useState(0)
+	const [income, setIncome] = React.useState('')
 
 	if (!group) {
 		return
@@ -36,7 +39,11 @@ const DebtsPanel = ({
 
 	const handleOpenForm = async () => {
 		const fetchedIncome = await getIncome(group.id)
-		setIncome(fetchedIncome ?? income)
+		setIncome(
+			dineroFormat(
+				dinero({ amount: fetchedIncome ?? 0, currency: USD })
+			) ?? income
+		)
 		setOpenForm(true)
 	}
 

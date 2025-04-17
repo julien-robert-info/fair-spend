@@ -7,7 +7,7 @@ import Form from '@/components/Form'
 type IncomeFormProps = {
 	initialValues: {
 		groupId: number
-		income?: number | null
+		income?: string | null
 	}
 	onSuccess?: () => void
 }
@@ -26,6 +26,9 @@ const IncomeForm: React.FC<IncomeFormProps> = ({
 			<TextField
 				name='income'
 				type='number'
+				inputProps={{
+					step: 0.01,
+				}}
 				label='Montant'
 				variant='standard'
 				required={true}

@@ -7,7 +7,7 @@ import Form from '@/components/Form'
 type ExpenseFormProps = {
 	initialValues: {
 		groupId: number
-		amount?: number
+		amount?: string
 		description?: string
 	}
 	onSuccess?: () => void
@@ -26,7 +26,10 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
 			/>
 			<TextField
 				name='amount'
-				type='text'
+				type='number'
+				inputProps={{
+					step: 0.01,
+				}}
 				label='Montant'
 				variant='standard'
 				required={true}
