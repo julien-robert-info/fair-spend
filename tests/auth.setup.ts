@@ -51,6 +51,17 @@ setup('Authenticate Bob', async () => {
 		},
 		update: {
 			sessions: {
+				connectOrCreate: {
+					where: { sessionToken: aliceSessionToken },
+					create: {
+						expires: new Date(
+							now.getFullYear(),
+							now.getMonth() + 1,
+							0
+						),
+						sessionToken: aliceSessionToken,
+					},
+				},
 				update: {
 					where: {
 						sessionToken: bobSessionToken,
@@ -118,6 +129,17 @@ setup('Authenticate Alice', async () => {
 		},
 		update: {
 			sessions: {
+				connectOrCreate: {
+					where: { sessionToken: aliceSessionToken },
+					create: {
+						expires: new Date(
+							now.getFullYear(),
+							now.getMonth() + 1,
+							0
+						),
+						sessionToken: aliceSessionToken,
+					},
+				},
 				update: {
 					where: {
 						sessionToken: aliceSessionToken,

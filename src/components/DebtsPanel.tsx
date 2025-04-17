@@ -8,54 +8,35 @@ import {
 	IconButton,
 	Paper,
 } from '@mui/material'
-import AddCardRoundedIcon from '@mui/icons-material/AddCardRounded'
 import SettingsIcon from '@mui/icons-material/Settings'
 import HistoryIcon from '@mui/icons-material/History'
 import CloseIcon from '@mui/icons-material/Close'
 import { GroupDetails } from '@/actions/group'
-import ExpenseForm from '@/forms/ExpenseForm'
 import { ShareMode } from '@prisma/client'
 import IncomeForm from '@/forms/IncomeForm'
 import { getIncome } from '@/actions/member'
 import { DebtList } from '@/components/DebtList'
 import { MemberHistory } from '@/components/MemberHistory'
+import GroupMenu from './GroupMenu'
 
-const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
+const DebtsPanel = ({
+	group,
+	isDesktop,
+}: {
+	group?: GroupDetails
+	isDesktop: boolean
+}) => {
 	const [tab, setTab] = React.useState(0)
 	const [openForm, setOpenForm] = React.useState(false)
-	const [formTitle, setFormTitle] = React.useState('Saisir une dépense')
-	const [form, setForm] = React.useState<React.ReactNode>()
+	const [income, setIncome] = React.useState(0)
 
 	if (!group) {
 		return
 	}
 
-	const handleOpenForm = async (
-		form: 'expense' | 'income',
-		groupId: number
-	) => {
-		if (form === 'expense') {
-			setFormTitle('Saisir une dépense')
-			setForm(
-				<ExpenseForm
-					initialValues={{
-						groupId: groupId,
-					}}
-					onSuccess={() => setOpenForm(false)}
-				/>
-			)
-		} else {
-			setFormTitle('Saisir votre revenu mensuel')
-			setForm(
-				<IncomeForm
-					initialValues={{
-						groupId: groupId,
-						income: await getIncome(groupId),
-					}}
-					onSuccess={() => setOpenForm(false)}
-				/>
-			)
-		}
+	const handleOpenForm = async () => {
+		const fetchedIncome = await getIncome(group.id)
+		setIncome(fetchedIncome ?? income)
 		setOpenForm(true)
 	}
 
@@ -64,9 +45,9 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 			sx={{
 				position: 'relative',
 				minHeight: '10em',
-				width: '97vw',
+				width: isDesktop ? '46.5vw' : '97vw',
 				my: 2,
-				mx: 'auto',
+				mx: isDesktop ? 1 : 'auto',
 				p: 2,
 			}}
 		>
@@ -76,9 +57,7 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 						{group.shareMode === ShareMode.FAIR && (
 							<IconButton
 								aria-label='settings'
-								onClick={() =>
-									handleOpenForm('income', group.id)
-								}
+								onClick={() => handleOpenForm()}
 							>
 								<SettingsIcon />
 							</IconButton>
@@ -98,14 +77,7 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 								<CloseIcon />
 							</IconButton>
 						)}
-					</Box>
-					<Box sx={{ textAlign: 'center' }}>
-						<IconButton
-							aria-label='add_expense'
-							onClick={() => handleOpenForm('expense', group.id)}
-						>
-							<AddCardRoundedIcon />
-						</IconButton>
+						<GroupMenu group={group} />
 					</Box>
 					{tab === 0 ? (
 						<DebtList group={group} />
@@ -113,8 +85,16 @@ const DebtsPanel = ({ group }: { group?: GroupDetails }) => {
 						<MemberHistory group={group} />
 					)}
 					<Dialog open={openForm} onClose={() => setOpenForm(false)}>
-						<DialogTitle>{formTitle}</DialogTitle>
-						<DialogContent>{form}</DialogContent>
+						<DialogTitle>Saisir votre revenu mensuel</DialogTitle>
+						<DialogContent>
+							<IncomeForm
+								initialValues={{
+									groupId: group.id,
+									income: income,
+								}}
+								onSuccess={() => setOpenForm(false)}
+							/>
+						</DialogContent>
 					</Dialog>
 				</>
 			)}

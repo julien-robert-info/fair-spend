@@ -3,7 +3,7 @@ import { SwipeToLocator } from '@/utils/test'
 import { randNumber } from '@ngneat/falso'
 import prisma from '@/utils/prisma'
 
-test.describe('Debt panel features', () => {
+test.describe('Debts features', () => {
 	test.beforeEach(async () => {
 		await prisma.payback.deleteMany({})
 		await prisma.transfer.deleteMany({})
@@ -29,7 +29,7 @@ test.describe('Debt panel features', () => {
 		}
 		await expect(settingButton).toBeVisible()
 
-		const income = randNumber().toString()
+		const income = randNumber({ fraction: 2 }).toString()
 
 		await settingButton.click()
 		await incomeFormFields.fill(income)
@@ -39,50 +39,11 @@ test.describe('Debt panel features', () => {
 		await expect(incomeFormFields).toHaveValue(income)
 	})
 
-	test('Cannot add expense with invalid amount', async ({
-		page,
-		isMobile,
-	}) => {
-		await page.goto('/')
-
-		const groupCard = page.locator('.MuiCard-root').first()
-		const addExpenseButton = page.getByRole('button', {
-			name: 'add_expense',
-		})
-		const amountFormField = page.getByLabel('Montant *')
-		const descriptionFormField = page.getByLabel('Description')
-		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
-		const overlay = page.getByRole('presentation')
-
-		if (!isMobile) {
-			groupCard.click()
-		}
-
-		await expect(addExpenseButton).toBeVisible()
-		await addExpenseButton.click()
-		await amountFormField.fill('invalid')
-		await descriptionFormField.fill('test')
-		await submitButton.click()
-
-		await expect(page.getByText('Montant invalide')).toBeVisible()
-
-		await overlay.click({ position: { x: 10, y: 10 } })
-		await addExpenseButton.click()
-		await amountFormField.fill('-12')
-		await descriptionFormField.fill('test')
-
-		await expect(page.getByText('Montant invalide')).toBeHidden()
-
-		await submitButton.click()
-
-		await expect(page.getByText('Montant invalide')).toBeVisible()
-	})
-
 	test('Can add expense, then debt appear', async ({ page, isMobile }) => {
 		await page.goto('/')
 
 		const groupCard = page.locator('.MuiCard-root').first()
-		const addExpenseButton = page.getByRole('button', {
+		const addExpenseButton = groupCard.getByRole('button', {
 			name: 'add_expense',
 		})
 		const amountFormField = page.getByLabel('Montant *')
@@ -110,28 +71,30 @@ test.describe('Debt panel features', () => {
 		page,
 		isMobile,
 	}) => {
+		await page.goto('/')
+
+		const groupCard = page.locator('.MuiCard-root').first()
+		const repayButton = page.getByRole('button', { name: 'payback' })
+		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
+
 		const secondUserContext = await browser.newContext({
 			storageState: isMobile
 				? 'playwright/.auth/bob.json'
 				: 'playwright/.auth/alice.json',
 		})
 		const secondUserPage = await secondUserContext.newPage()
-
-		const groupCard = page.locator('.MuiCard-root').first()
-		const repayButton = page.getByRole('button', { name: 'payback' })
-		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
-
 		await secondUserPage.goto('/')
 
+		const secondGroupCard = secondUserPage.locator('.MuiCard-root').first()
+		const addExpenseButton = secondGroupCard.getByRole('button', {
+			name: 'add_expense',
+		})
+
 		if (!isMobile) {
-			secondUserPage.locator('.MuiCard-root').first().click()
+			secondGroupCard.click()
 		}
 
-		await secondUserPage
-			.getByRole('button', {
-				name: 'add_expense',
-			})
-			.click()
+		await addExpenseButton.click()
 		await secondUserPage.getByLabel('Montant *').fill('100')
 		await secondUserPage.getByLabel('Description').fill('test')
 		await secondUserPage

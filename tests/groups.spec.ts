@@ -47,7 +47,9 @@ test.describe('Groups features', () => {
 
 		await expect(card).toBeVisible()
 
-		await card.getByRole('button', { name: 'edit' }).click()
+		// update
+		await page.getByRole('button', { name: 'menu' }).click()
+		await page.getByRole('menuitem', { name: 'modifier' }).click()
 		await nameFormField.fill('myGroup')
 		await page.getByRole('button', { name: 'enregistrer' }).click()
 
@@ -58,7 +60,8 @@ test.describe('Groups features', () => {
 		await expect(card).toBeVisible()
 
 		// delete
-		await card.getByRole('button', { name: 'delete' }).click()
+		await page.getByRole('button', { name: 'menu' }).click()
+		await page.getByRole('menuitem', { name: 'Supprimer' }).click()
 		await page.getByRole('button', { name: 'oui' }).click()
 
 		await expect(card).toBeHidden()
@@ -91,7 +94,8 @@ test.describe('Groups features', () => {
 		await expect(card).toBeVisible()
 
 		// share
-		await card.getByRole('button', { name: 'share' }).click()
+		await page.getByRole('button', { name: 'menu' }).click()
+		await page.getByRole('menuitem', { name: 'Inviter' }).click()
 
 		await expect(page.getByLabel('Email')).toBeVisible()
 
@@ -156,11 +160,16 @@ test.describe('Groups features', () => {
 
 		if (isMobile) {
 			SwipeToLocator(page, card)
+		} else {
+			await card.click()
 		}
 
-		await expect(card.getByRole('button', { name: 'leave' })).toBeVisible()
+		await page.getByRole('button', { name: 'menu' }).click()
+		await expect(
+			page.getByRole('menuitem', { name: 'Quitter' })
+		).toBeVisible()
 
-		await card.getByRole('button', { name: 'leave' }).click()
+		await page.getByRole('menuitem', { name: 'Quitter' }).click()
 
 		await expect(page.getByLabel('Nouveau propriétaire')).toBeVisible()
 		await page.getByLabel('Nouveau propriétaire').click()
@@ -175,10 +184,13 @@ test.describe('Groups features', () => {
 
 		if (isMobile) {
 			SwipeToLocator(secondUserPage, secondUserCard)
+		} else {
+			await secondUserCard.click()
 		}
 
+		await secondUserPage.getByRole('button', { name: 'menu' }).click()
 		await expect(
-			secondUserCard.getByRole('button', { name: 'edit' })
+			secondUserPage.getByRole('menuitem', { name: 'Supprimer' })
 		).toBeVisible()
 	})
 })

@@ -5,12 +5,11 @@ import InviteCard from './InviteCard'
 import Carousel from 'react-material-ui-carousel'
 import { GroupDashboardProps } from './GroupStack'
 
-const GroupCarousel: React.FC<GroupDashboardProps> = ({
+const GroupCarousel: React.FC<Omit<GroupDashboardProps, 'handleOpenForm'>> = ({
 	groups,
 	invites,
 	currentGroup,
 	setCurrentGroup,
-	handleOpenForm,
 }) => {
 	const [carouselIndex, setCarouselIndex] = React.useState(0)
 
@@ -62,7 +61,6 @@ const GroupCarousel: React.FC<GroupDashboardProps> = ({
 					<GroupCard
 						key={`group-${i}`}
 						group={group}
-						edit={handleOpenForm}
 						sx={{ minWidth: 180 }}
 					/>
 				)),

@@ -20,7 +20,7 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 		.locator('.MuiCard-root')
 		.filter({ has: page.getByTestId('BalanceIcon') })
 		.first()
-	const addExpenseButton = page.getByRole('button', { name: 'add_expense' })
+	const menuButton = page.getByRole('button', { name: 'menu' })
 	const settingButton = page.getByRole('button', { name: 'settings' })
 
 	if (isMobile) {
@@ -29,7 +29,7 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 		equitableModeCard.click()
 	}
 
-	await expect(addExpenseButton).toBeVisible()
+	await expect(menuButton).toBeVisible()
 	await expect(settingButton).toBeHidden()
 
 	await page.reload()
@@ -39,6 +39,6 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 		fairModeCard.click()
 	}
 
-	await expect(addExpenseButton).toBeVisible()
+	await expect(menuButton).toBeVisible()
 	await expect(settingButton).toBeVisible()
 })

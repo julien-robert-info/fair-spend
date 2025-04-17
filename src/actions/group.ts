@@ -31,7 +31,6 @@ export const getGroups = async (): Promise<GroupDetails[]> => {
 					isIncomeSet: true,
 					user: { select: { name: true, image: true, email: true } },
 				},
-				where: { user: { email: { not: user?.email! } } },
 			},
 		},
 		where: {

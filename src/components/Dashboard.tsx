@@ -15,7 +15,7 @@ import AddIcon from '@mui/icons-material/Add'
 import { GroupDetails } from '@/actions/group'
 import { InviteDetail } from '@/actions/invite'
 import GroupStack from './GroupStack'
-import GroupForm, { GroupFormProps } from '@/forms/GroupForm'
+import GroupForm from '@/forms/GroupForm'
 import GroupCarousel from './GroupCarousel'
 import DebtsPanel from './DebtsPanel'
 
@@ -29,10 +29,6 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 	const isDesktop = useMediaQuery(theme.breakpoints.up('sm'))
 	const [didmount, setDidmount] = React.useState(false)
 	const [openForm, setOpenForm] = React.useState(false)
-	const [formValues, setFormValues] = React.useState<GroupFormProps>({
-		initialValues: {},
-	})
-	const [formTitle, setFormTitle] = React.useState('Nouveau budget partagé')
 	const [currentGroup, setCurrentGroup] = React.useState<number | undefined>()
 
 	React.useEffect(() => {
@@ -41,26 +37,6 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
-
-	const handleOpenForm = (id?: number) => {
-		const group = groups.find((group: GroupDetails) => group.id === id)
-
-		setFormTitle(
-			group ? 'Modifier le budget partagé' : 'Nouveau budget partagé'
-		)
-		setFormValues({
-			initialValues: {
-				id: group?.id,
-				name: group?.name,
-				shareMode: group?.shareMode,
-			},
-			onSuccess: (resultGroup) => {
-				setCurrentGroup(resultGroup?.id)
-				setOpenForm(false)
-			},
-		})
-		setOpenForm(true)
-	}
 
 	return (
 		<Box>
@@ -79,7 +55,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 						size='small'
 						color='secondary'
 						aria-label='add_group'
-						onClick={() => handleOpenForm()}
+						onClick={() => setOpenForm(true)}
 					>
 						<AddIcon />
 					</Fab>
@@ -91,7 +67,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 					invites={invites}
 					currentGroup={currentGroup}
 					setCurrentGroup={setCurrentGroup}
-					handleOpenForm={handleOpenForm}
+					handleOpenForm={() => setOpenForm(true)}
 				/>
 			) : (
 				didmount &&
@@ -101,7 +77,6 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 						invites={invites}
 						currentGroup={currentGroup}
 						setCurrentGroup={setCurrentGroup}
-						handleOpenForm={handleOpenForm}
 					/>
 				)
 			)}
@@ -123,11 +98,18 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 			)}
 			<DebtsPanel
 				group={groups.find((group) => group.id === currentGroup)}
+				isDesktop={isDesktop}
 			/>
 			<Dialog open={openForm} onClose={() => setOpenForm(false)}>
-				<DialogTitle>{formTitle}</DialogTitle>
+				<DialogTitle>Nouveau budget partagé</DialogTitle>
 				<DialogContent>
-					<GroupForm {...formValues} />
+					<GroupForm
+						initialValues={{}}
+						onSuccess={(resultGroup) => {
+							setCurrentGroup(resultGroup?.id)
+							setOpenForm(false)
+						}}
+					/>
 				</DialogContent>
 			</Dialog>
 		</Box>

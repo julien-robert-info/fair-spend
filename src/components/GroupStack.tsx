@@ -47,7 +47,6 @@ const GroupStack: React.FC<GroupDashboardProps> = ({
 					key={group.id}
 					onClick={() => setCurrentGroup(group.id)}
 					group={group}
-					edit={handleOpenForm}
 					sx={{
 						minWidth: 180,
 						...(currentGroup === group.id && {
