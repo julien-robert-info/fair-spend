@@ -7,6 +7,7 @@ import {
 	DialogTitle,
 	IconButton,
 	Paper,
+	Stack,
 } from '@mui/material'
 import SettingsIcon from '@mui/icons-material/Settings'
 import HistoryIcon from '@mui/icons-material/History'
@@ -51,7 +52,7 @@ const DebtsPanel = ({
 		<Paper
 			sx={{
 				position: 'relative',
-				minHeight: '10em',
+				// minHeight: '10em',
 				width: isDesktop ? '46.5vw' : '97vw',
 				my: 2,
 				mx: isDesktop ? 1 : 'auto',
@@ -60,7 +61,7 @@ const DebtsPanel = ({
 		>
 			{group && (
 				<>
-					<Box sx={{ float: 'right' }}>
+					<Stack direction='row' justifyContent='end'>
 						{group.shareMode === ShareMode.FAIR && (
 							<IconButton
 								aria-label='settings'
@@ -78,14 +79,14 @@ const DebtsPanel = ({
 							</IconButton>
 						) : (
 							<IconButton
-								aria-label='close'
+								aria-label='history-close'
 								onClick={() => setTab(0)}
 							>
 								<CloseIcon />
 							</IconButton>
 						)}
 						<GroupMenu group={group} />
-					</Box>
+					</Stack>
 					{tab === 0 ? (
 						<DebtList group={group} />
 					) : (

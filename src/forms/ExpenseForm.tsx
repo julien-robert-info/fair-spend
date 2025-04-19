@@ -3,10 +3,12 @@ import React from 'react'
 import { Button, TextField } from '@mui/material'
 import { createExpense } from '@/actions/expense'
 import Form from '@/components/Form'
+import { DatePicker } from '@mui/x-date-pickers'
 
 type ExpenseFormProps = {
 	initialValues: {
 		groupId: number
+		date?: Date
 		amount?: string
 		description?: string
 	}
@@ -23,6 +25,12 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
 				name='groupId'
 				value={initialValues.groupId}
 				sx={{ display: 'none' }}
+			/>
+			<DatePicker
+				name='date'
+				label='Date'
+				defaultValue={initialValues.date ?? new Date()}
+				slotProps={{ textField: { variant: 'standard' } }}
 			/>
 			<TextField
 				name='amount'

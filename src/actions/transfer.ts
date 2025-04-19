@@ -8,6 +8,7 @@ import { calcultatePaybacks } from '@/actions/payback'
 import { repayDebts } from './debt'
 import { FormAction } from '@/components/Form'
 import * as Sentry from '@sentry/nextjs'
+import { parse } from 'date-fns'
 
 export type TransferDetail = {
 	amount: number
@@ -50,6 +51,8 @@ export const createTransfer: FormAction = async (prevState, formData) => {
 			const user = await authOrError()
 
 			const groupId = Number(formData.get('groupId'))
+			const rawDate = formData.get('date') as string
+			const date = parse(rawDate, 'dd/MM/yyyy', new Date())
 			const receiver = formData.get('receiver') as string
 			const rawAmount = Number(
 				(formData.get('amount') as string).replace(',', '.')
@@ -81,7 +84,7 @@ export const createTransfer: FormAction = async (prevState, formData) => {
 				transfer = await prisma.transfer.create({
 					data: {
 						amount,
-						date: new Date(),
+						date,
 						group: { connect: { id: groupId } },
 						sender: { connect: { email: user?.email! } },
 						receiver: { connect: { email: receiver } },

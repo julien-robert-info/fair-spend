@@ -14,10 +14,12 @@ import { DefaultSession } from 'next-auth'
 import UserAvatar from '@/components/UserAvatar'
 import { createTransfer } from '@/actions/transfer'
 import Form from '@/components/Form'
+import { DatePicker } from '@mui/x-date-pickers'
 
 export type TransferFormProps = {
 	initialValues: {
 		groupId: number
+		date?: Date
 		amount: string
 		receiver?: string
 		members: { user: DefaultSession['user'] }[]
@@ -41,6 +43,12 @@ const TransferForm: React.FC<TransferFormProps> = ({
 				name='groupId'
 				value={initialValues.groupId}
 				sx={{ display: 'none' }}
+			/>
+			<DatePicker
+				name='date'
+				label='Date'
+				defaultValue={initialValues.date ?? new Date()}
+				slotProps={{ textField: { variant: 'standard' } }}
 			/>
 			<TextField
 				name='amount'

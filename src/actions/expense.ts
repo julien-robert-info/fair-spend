@@ -9,6 +9,7 @@ import { dinero, toSnapshot } from 'dinero.js'
 import { USD } from '@dinero.js/currencies'
 import { FormAction } from '@/components/Form'
 import * as Sentry from '@sentry/nextjs'
+import { parse } from 'date-fns'
 
 export type ExpenseDetail = Omit<Expense, 'id' | 'payerId' | 'groupId'> & {
 	payer: { name: string | null; image: string | null }
@@ -59,6 +60,8 @@ export const createExpense: FormAction = async (prevState, formData) => {
 			const user = await authOrError()
 
 			const groupId = Number(formData.get('groupId'))
+			const rawDate = formData.get('date') as string
+			const date = parse(rawDate, 'dd/MM/yyyy', new Date())
 			const description = formData.get('description') as string
 			const rawAmount = Number(
 				(formData.get('amount') as string).replace(',', '.')
@@ -77,9 +80,9 @@ export const createExpense: FormAction = async (prevState, formData) => {
 			try {
 				expense = await prisma.expense.create({
 					data: {
+						date,
 						description,
 						amount: toSnapshot(amount).amount,
-						date: new Date(),
 						group: { connect: { id: groupId } },
 						payer: { connect: { email: user?.email! } },
 						debts: {

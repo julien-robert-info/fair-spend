@@ -31,10 +31,12 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 	const [openForm, setOpenForm] = React.useState(false)
 	const [currentGroup, setCurrentGroup] = React.useState<number | undefined>()
 
+	const currentGroupDetails = React.useMemo(() => {
+		return groups.find((group) => group.id === currentGroup)
+	}, [groups, currentGroup])
+
 	React.useEffect(() => {
-		if (!didmount) {
-			setDidmount(true)
-		}
+		setDidmount(true)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 
@@ -96,10 +98,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 					</Typography>
 				</Paper>
 			)}
-			<DebtsPanel
-				group={groups.find((group) => group.id === currentGroup)}
-				isDesktop={isDesktop}
-			/>
+			<DebtsPanel group={currentGroupDetails} isDesktop={isDesktop} />
 			<Dialog open={openForm} onClose={() => setOpenForm(false)}>
 				<DialogTitle>Nouveau budget partagé</DialogTitle>
 				<DialogContent>

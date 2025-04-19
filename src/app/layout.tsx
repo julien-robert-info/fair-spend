@@ -4,6 +4,7 @@ import { CssBaseline, ThemeProvider } from '@mui/material'
 import theme from '@/theme'
 import { auth } from '@/utils/auth'
 import Header from '@/components/Header'
+import LocaleProvider from '@/providers/LocaleProvider'
 
 export const metadata: Metadata = {
 	title: 'Fair Spend',
@@ -22,9 +23,11 @@ export default async function RootLayout({
 			<body>
 				<AppRouterCacheProvider>
 					<ThemeProvider theme={theme}>
-						<CssBaseline />
-						<Header user={session?.user} />
-						{children}
+						<LocaleProvider>
+							<CssBaseline />
+							<Header user={session?.user} />
+							{children}
+						</LocaleProvider>
 					</ThemeProvider>
 				</AppRouterCacheProvider>
 			</body>
