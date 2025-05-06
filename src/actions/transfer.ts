@@ -3,8 +3,16 @@ import prisma from '@/utils/prisma'
 import { authOrError } from '@/utils/auth'
 import { revalidatePath } from 'next/cache'
 import { USD } from '@dinero.js/currencies'
-import { add, dinero, equal } from 'dinero.js'
-import { calcultatePaybacks } from '@/actions/payback'
+import {
+	add,
+	Dinero,
+	dinero,
+	equal,
+	isNegative,
+	isZero,
+	subtract,
+} from 'dinero.js'
+import { calcultatePaybacks, PaybackDetails } from '@/actions/payback'
 import { repayDebts } from './debt'
 import { FormAction } from '@/components/Form'
 import * as Sentry from '@sentry/nextjs'
@@ -15,6 +23,7 @@ export type TransferDetail = {
 	date: Date
 	sender: { name: string | null; image: string | null }
 	receiver: { name: string | null; image: string | null }
+	paybacks?: PaybackDetails[]
 }
 
 export const getTransfers = async (
@@ -106,4 +115,57 @@ export const createTransfer: FormAction = async (prevState, formData) => {
 			return { message: 'success', result: transfer }
 		}
 	)
+}
+
+export const getTransferNetAmount = (
+	transfer: Omit<
+		TransferDetail,
+		'sender' | 'receiver' | 'date' | 'paybacks'
+	> & { paybacks: Omit<PaybackDetails, 'debtId'>[] }
+): Dinero<number> => {
+	return subtract(
+		dinero({ amount: transfer.amount, currency: USD }),
+		transfer.paybacks?.reduce(
+			(acc, { amount }) =>
+				add(
+					acc,
+					dinero({
+						amount: amount,
+						currency: USD,
+					})
+				),
+			dinero({ amount: 0, currency: USD })
+		) ?? dinero({ amount: 0, currency: USD })
+	)
+}
+
+export const consumeTransfers = async (transferIds: number[]) => {
+	try {
+		await Promise.all(
+			transferIds.map(async (transferId) => {
+				const transfer = await prisma.transfer.findFirstOrThrow({
+					select: {
+						amount: true,
+						isConsumed: true,
+						paybacks: {
+							select: { amount: true, transferId: true },
+						},
+					},
+					where: { id: transferId },
+				})
+
+				const netAmount = getTransferNetAmount(transfer)
+				const isConsumed = isNegative(netAmount) || isZero(netAmount)
+
+				if (isConsumed !== transfer.isConsumed) {
+					await prisma.transfer.update({
+						data: { isConsumed: isConsumed },
+						where: { id: transferId },
+					})
+				}
+			})
+		)
+	} catch (error) {
+		throw error
+	}
 }

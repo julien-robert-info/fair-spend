@@ -12,11 +12,13 @@ import {
 	lessThanOrEqual,
 	toSnapshot,
 } from 'dinero.js'
+import { getTransferNetAmount } from './transfer'
 
 export type PaybackDetails = {
 	amount: number
 	debtId: number
-	counterDebtId?: number
+	counterDebtId?: number | null
+	transferId?: number | null
 }
 
 export const calcultatePaybacks = async (
@@ -26,6 +28,19 @@ export const calcultatePaybacks = async (
 	receiver: string,
 	counterDebtId?: number
 ): Promise<PaybackDetails[]> => {
+	const transfers = await prisma.transfer.findMany({
+		select: {
+			id: true,
+			amount: true,
+			paybacks: { select: { amount: true } },
+		},
+		where: {
+			sender: { email: receiver },
+			receiver: { email: sender },
+			isConsumed: false,
+		},
+	})
+
 	const debts = await prisma.debt.findMany({
 		select: {
 			id: true,
@@ -40,14 +55,25 @@ export const calcultatePaybacks = async (
 		},
 	})
 
+	const remainingAmounts = [
+		...transfers.map((transfer) => ({
+			amount: getTransferNetAmount(transfer),
+			id: transfer.id,
+			isTransfer: true,
+		})),
+		...debts.map((transfer) => ({
+			amount: getDebtNetAmount(transfer),
+			id: transfer.id,
+			isTransfer: false,
+		})),
+	]
 	const totalAmount = dinero({ amount: amount, currency: USD })
 	let paybacksAmount = dinero({ amount: 0, currency: USD })
 	let paybacks: PaybackDetails[] = []
 
 	let i = 0
 	while (lessThan(paybacksAmount, totalAmount) && debts.length > i) {
-		const debt = debts[i]
-		const remainingAmount = getDebtNetAmount(debt)
+		const remainingAmount = remainingAmounts[i].amount
 
 		if (isPositive(remainingAmount) && !isZero(remainingAmount)) {
 			const paybackAmount = lessThanOrEqual(
@@ -64,8 +90,12 @@ export const calcultatePaybacks = async (
 
 			paybacks.push({
 				amount: paybackAmount.amount,
-				debtId: debt.id,
-				counterDebtId: counterDebtId,
+				...(remainingAmounts[i].isTransfer === true
+					? {
+							debtId: counterDebtId!,
+							transferId: remainingAmounts[i].id,
+					  }
+					: { debtId: remainingAmounts[i].id, counterDebtId }),
 			})
 		}
 

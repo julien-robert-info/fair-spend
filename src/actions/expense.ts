@@ -10,6 +10,7 @@ import { USD } from '@dinero.js/currencies'
 import { FormAction } from '@/components/Form'
 import * as Sentry from '@sentry/nextjs'
 import { parse } from 'date-fns'
+import { consumeTransfers } from './transfer'
 
 export type ExpenseDetail = Omit<Expense, 'id' | 'payerId' | 'groupId'> & {
 	payer: { name: string | null; image: string | null }
@@ -132,6 +133,11 @@ export const createExpense: FormAction = async (prevState, formData) => {
 				await repayDebts([
 					...expense.debts.map((debt) => debt.id),
 					...paybacks.map((payback) => payback.debtId),
+				])
+				await consumeTransfers([
+					...paybacks
+						.filter((payback) => payback.transferId)
+						.map((payback) => payback.transferId!),
 				])
 			} catch (error) {
 				throw error
