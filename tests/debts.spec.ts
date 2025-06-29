@@ -1,78 +1,181 @@
-import { test, expect } from '@playwright/test'
-import { SwipeToLocator } from '@/utils/test'
+import { test, expect, Page, Locator } from '@playwright/test'
 import { randNumber } from '@ngneat/falso'
 import prisma from '@/utils/prisma'
 
+const createExpense = async (
+	page: Page,
+	groupCard: Locator,
+	amount: number,
+	description: string
+) => {
+	const addExpenseButton = groupCard.getByRole('button', {
+		name: 'add_expense',
+	})
+	const amountFormField = page.getByLabel('Montant *')
+	const descriptionFormField = page.getByLabel('Description')
+	const submitButton = page.getByRole('button', { name: 'Enregistrer' })
+
+	await addExpenseButton.click()
+	await amountFormField.fill(amount.toString())
+	await descriptionFormField.fill(description)
+	await submitButton.click()
+}
+
 test.describe('Debts features', () => {
 	test.beforeEach(async () => {
-		await prisma.payback.deleteMany({})
 		await prisma.transfer.deleteMany({})
-		await prisma.debt.deleteMany({})
 		await prisma.expense.deleteMany({})
 	})
 
-	test('Can set Income on Fair group', async ({ page, isMobile }) => {
+	test('Debts are correctly calculated', async ({ page, isMobile }) => {
 		await page.goto('/')
-
-		const fairModeCard = page
-			.locator('.MuiCard-root')
-			.filter({ has: page.getByTestId('VolunteerActivismIcon') })
-			.first()
-		const settingButton = page.getByRole('button', { name: 'settings' })
-		const incomeFormFields = page.getByLabel('Montant *')
-		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
-
-		if (isMobile) {
-			SwipeToLocator(page, fairModeCard)
-		} else {
-			fairModeCard.click()
-		}
-		await expect(settingButton).toBeVisible()
-
-		const income = randNumber({ fraction: 2 }).toString()
-
-		await settingButton.click()
-		await incomeFormFields.fill(income)
-		await submitButton.click()
-
-		await settingButton.click()
-		await expect(incomeFormFields).toHaveValue(income)
-	})
-
-	test('Can add expense, then debt appear', async ({ page, isMobile }) => {
-		await page.goto('/')
-
 		const groupCard = page.locator('.MuiCard-root').first()
-		const addExpenseButton = groupCard.getByRole('button', {
-			name: 'add_expense',
-		})
-		const amountFormField = page.getByLabel('Montant *')
-		const descriptionFormField = page.getByLabel('Description')
-		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
-
 		if (!isMobile) {
-			groupCard.click()
+			await groupCard.click()
 		}
+		await expect(page.getByText('Solde :')).toBeVisible()
 
-		await addExpenseButton.click()
-		await amountFormField.fill(
-			randNumber({ min: 1, max: 100, fraction: 2 }).toString()
-		)
-		await descriptionFormField.fill('test')
-		await submitButton.click()
+		const amount = randNumber({ min: 1, max: 100, fraction: 2 })
+		await createExpense(page, groupCard, amount, 'test')
 
 		await expect(
-			page.getByText(/\w+ vous doit \d+\.\d+€/).first()
+			page.getByText(/[Bob|Alice] vous doit \d+\.\d+€/)
 		).toBeVisible()
+
+		const expense = await prisma.expense.findFirst({
+			select: {
+				amount: true,
+				debts: {
+					select: {
+						amount: true,
+						isRepayed: true,
+						paybacks: true,
+						payingBack: true,
+					},
+				},
+				group: { select: { members: true } },
+			},
+		})
+
+		expect(expense?.amount).toBe(Math.round(amount * 100))
+		expect(expense?.debts.length).toBe(
+			(expense?.group.members.length ?? 0) - 1
+		)
+		expense?.debts.map((debt) => {
+			expect(Math.round(debt.amount / 100)).toBeCloseTo(
+				Math.round(amount / expense?.group.members.length),
+				1
+			)
+			expect(debt.isRepayed).toBeFalsy()
+			expect(debt.paybacks.length).toBe(0)
+			expect(debt.payingBack.length).toBe(0)
+		})
 	})
 
-	test('Can repay a debt with a transfer', async ({
+	test('Paybacks are correctly calculated with counterDebts', async ({
 		browser,
 		page,
 		isMobile,
 	}) => {
+		const groupCard = page.locator('.MuiCard-root').first()
+		const repayButton = page.getByRole('button', { name: 'payback' })
+
+		const secondUserContext = await browser.newContext({
+			storageState: isMobile
+				? 'playwright/.auth/bob.json'
+				: 'playwright/.auth/alice.json',
+		})
+		const secondUserPage = await secondUserContext.newPage()
+		await secondUserPage.goto('/')
+
+		const secondGroupCard = secondUserPage.locator('.MuiCard-root').first()
+
+		if (!isMobile) {
+			await secondGroupCard.click()
+		}
+		await expect(secondUserPage.getByText('Solde :')).toBeVisible()
+
+		await createExpense(secondUserPage, secondGroupCard, 100, 'test')
+
+		await expect(
+			secondUserPage.getByText(/[Bob|Alice] vous doit \d+\.\d+€/)
+		).toBeVisible()
+		await secondUserContext.close()
+
 		await page.goto('/')
 
+		if (!isMobile) {
+			await groupCard.click()
+		}
+		await expect(page.getByText('Solde :')).toBeVisible()
+
+		await expect(repayButton).toBeVisible()
+
+		await createExpense(page, groupCard, 100, 'test2')
+
+		await expect(repayButton).toBeHidden()
+		await page.waitForTimeout(1000)
+
+		const paybacks = await prisma.payback.findMany({
+			select: {
+				amount: true,
+				debt: {
+					select: {
+						amount: true,
+						isRepayed: true,
+						debtor: { select: { name: true } },
+						expense: {
+							select: { payer: { select: { name: true } } },
+						},
+					},
+				},
+				counterDebt: {
+					select: {
+						amount: true,
+						isRepayed: true,
+						debtor: { select: { name: true } },
+						expense: {
+							select: { payer: { select: { name: true } } },
+						},
+					},
+				},
+			},
+		})
+
+		expect(paybacks.length).toBe(1)
+
+		paybacks.map((payback) => {
+			if (payback.counterDebt?.amount === payback.debt.amount) {
+				expect(payback.debt.isRepayed).toBeTruthy()
+				expect(payback.counterDebt?.isRepayed).toBeTruthy()
+			} else {
+				expect(Math.round(payback.amount / 10)).toBeCloseTo(
+					Math.round(payback.debt.amount / 10)
+				)
+				expect(Math.round(payback.amount / 10)).toBeCloseTo(
+					Math.round(payback.counterDebt?.amount! / 10)
+				)
+				expect(payback.debt.isRepayed).toBeTruthy()
+				expect(payback.counterDebt?.isRepayed).toBeFalsy()
+			}
+			expect(payback.debt.debtor.name).toBe(isMobile ? 'Alice' : 'Bob')
+			expect(payback.debt.expense.payer.name).toBe(
+				isMobile ? 'Bob' : 'Alice'
+			)
+			expect(payback.counterDebt?.debtor.name).toBe(
+				isMobile ? 'Bob' : 'Alice'
+			)
+			expect(payback.counterDebt?.expense.payer.name).toBe(
+				isMobile ? 'Alice' : 'Bob'
+			)
+		})
+	})
+
+	test('Paybacks are correctly calculated with transfers', async ({
+		browser,
+		page,
+		isMobile,
+	}) => {
 		const groupCard = page.locator('.MuiCard-root').first()
 		const repayButton = page.getByRole('button', { name: 'payback' })
 		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
@@ -86,25 +189,279 @@ test.describe('Debts features', () => {
 		await secondUserPage.goto('/')
 
 		const secondGroupCard = secondUserPage.locator('.MuiCard-root').first()
-		const addExpenseButton = secondGroupCard.getByRole('button', {
-			name: 'add_expense',
-		})
 
 		if (!isMobile) {
-			secondGroupCard.click()
+			await secondGroupCard.click()
 		}
+		await expect(secondUserPage.getByText('Solde :')).toBeVisible()
 
-		await addExpenseButton.click()
-		await secondUserPage.getByLabel('Montant *').fill('100')
-		await secondUserPage.getByLabel('Description').fill('test')
-		await secondUserPage
-			.getByRole('button', { name: 'Enregistrer' })
-			.click()
+		await createExpense(secondUserPage, secondGroupCard, 100, 'test')
+
+		await expect(
+			secondUserPage.getByText(/[Bob|Alice] vous doit \d+\.\d+€/)
+		).toBeVisible()
+		await secondUserContext.close()
 
 		await page.goto('/')
 
 		if (!isMobile) {
-			groupCard.click()
+			await groupCard.click()
+		}
+		await expect(page.getByText('Solde :')).toBeVisible()
+
+		await expect(repayButton).toBeVisible()
+		await repayButton.click()
+		await submitButton.click()
+
+		await expect(repayButton).toBeHidden()
+		await page.waitForTimeout(1000)
+
+		const paybacks = await prisma.payback.findMany({
+			select: {
+				amount: true,
+				debt: {
+					select: {
+						amount: true,
+						isRepayed: true,
+						debtor: { select: { name: true } },
+						expense: {
+							select: { payer: { select: { name: true } } },
+						},
+					},
+				},
+				transfer: {
+					select: {
+						amount: true,
+						isConsumed: true,
+						receiver: { select: { name: true } },
+						sender: { select: { name: true } },
+					},
+				},
+			},
+		})
+
+		expect(paybacks.length).toBe(1)
+
+		paybacks.map((payback) => {
+			expect(Math.round(payback.amount / 10)).toBeCloseTo(
+				Math.round(payback.debt.amount / 10)
+			)
+			expect(Math.round(payback.amount / 10)).toBeCloseTo(
+				Math.round(payback.transfer?.amount! / 10)
+			)
+			expect(payback.debt.isRepayed).toBeTruthy()
+			expect(payback.transfer?.isConsumed).toBeTruthy()
+			expect(payback.debt.debtor.name).toBe(isMobile ? 'Alice' : 'Bob')
+			expect(payback.debt.expense.payer.name).toBe(
+				isMobile ? 'Bob' : 'Alice'
+			)
+			expect(payback.transfer?.receiver.name).toBe(
+				isMobile ? 'Bob' : 'Alice'
+			)
+			expect(payback.transfer?.sender.name).toBe(
+				isMobile ? 'Alice' : 'Bob'
+			)
+		})
+	})
+
+	test('Can add expense and delete it', async ({
+		page,
+		browser,
+		isMobile,
+	}) => {
+		const groupCard = page.locator('.MuiCard-root').first()
+		const historyButton = page.getByRole('button', { name: 'history' })
+		const historyCloseButton = page.getByRole('button', {
+			name: 'history-close',
+		})
+		const expenseHistory = page
+			.getByRole('button')
+			.filter({ hasText: `${isMobile ? 'Alice' : 'Bob'} à dépensé` })
+		const deleteExpenseButton = page.getByRole('button', { name: 'delete' })
+		const consfirmButton = page.getByRole('button', { name: 'oui' })
+
+		const secondUserContext = await browser.newContext({
+			storageState: isMobile
+				? 'playwright/.auth/bob.json'
+				: 'playwright/.auth/alice.json',
+		})
+		const secondUserPage = await secondUserContext.newPage()
+		await secondUserPage.goto('/')
+
+		const secondGroupCard = secondUserPage.locator('.MuiCard-root').first()
+
+		if (!isMobile) {
+			await secondGroupCard.click()
+		}
+		await expect(secondUserPage.getByText('Solde :')).toBeVisible()
+
+		await createExpense(secondUserPage, secondGroupCard, 100, 'test')
+
+		await expect(
+			secondUserPage.getByText(/[Bob|Alice] vous doit \d+\.\d+€/)
+		).toBeVisible()
+		await secondUserContext.close()
+
+		await page.goto('/')
+
+		if (!isMobile) {
+			await groupCard.click()
+		}
+		await expect(page.getByText('Solde :')).toBeVisible()
+		await expect(
+			page.getByText(/vous devez \d+\.\d+€ à [Bob|Alice]/)
+		).toBeVisible()
+		await expect(
+			page.getByText(/vous devez \d+\.\d+€ à [Bob|Alice]/)
+		).not.toContainText('0.01')
+
+		await createExpense(page, groupCard, 100, 'test')
+
+		await expect(async () => {
+			if (
+				await page
+					.getByText(/vous devez \d+\.\d+€ à [Bob|Alice]/)
+					.isVisible()
+			) {
+				await expect(
+					page.getByText(/vous devez \d+\.\d+€ à [Bob|Alice]/)
+				).toContainText('0.01', { timeout: 1000 })
+			} else {
+				await expect(
+					page.getByText(/vous devez \d+\.\d+€ à [Bob|Alice]/)
+				).toBeHidden()
+			}
+		}).toPass()
+
+		let debts = await prisma.debt.findMany({
+			select: {
+				amount: true,
+				isRepayed: true,
+				paybacks: {
+					select: {
+						amount: true,
+					},
+				},
+				payingBack: {
+					select: { amount: true },
+				},
+			},
+			where: { debtor: { name: { in: ['Alice', 'Bob'] } } },
+		})
+
+		debts.map((debt) => {
+			if (debt.payingBack.length > 0) {
+				if (debt.payingBack[0].amount === debt.amount) {
+					expect(debt.isRepayed).toBeTruthy()
+				} else {
+					expect(debt.isRepayed).toBeFalsy()
+					expect(Math.round(debt.amount / 10)).toBeCloseTo(
+						Math.round(debt.payingBack[0].amount / 10)
+					)
+				}
+			}
+			if (debt.paybacks.length > 0) {
+				if (debt.paybacks[0].amount === debt.amount) {
+					expect(debt.isRepayed).toBeTruthy()
+				} else {
+					expect(debt.isRepayed).toBeFalsy()
+					expect(Math.round(debt.amount / 10)).toBeCloseTo(
+						Math.round(debt.paybacks[0].amount / 10)
+					)
+				}
+			}
+		})
+
+		await historyButton.click()
+
+		await expect(expenseHistory).toBeVisible()
+		await expenseHistory.click()
+		await expect(deleteExpenseButton).toBeVisible()
+		await deleteExpenseButton.click()
+		await expect(consfirmButton).toBeVisible()
+		await consfirmButton.click()
+
+		await expect(expenseHistory).toBeHidden()
+		await historyCloseButton.click()
+
+		await expect(
+			page.getByText(/[Bob|Alice] vous doit \d+\.\d+€/)
+		).toHaveCount(0)
+
+		debts = await prisma.debt.findMany({
+			select: {
+				amount: true,
+				isRepayed: true,
+				debtor: { select: { name: true } },
+				expense: { select: { payer: { select: { name: true } } } },
+				paybacks: {
+					select: {
+						amount: true,
+					},
+				},
+				payingBack: {
+					select: { amount: true },
+				},
+			},
+			where: { debtor: { name: { in: ['Alice', 'Bob'] } } },
+		})
+
+		debts.map(async (debt) => {
+			console.log(debt)
+			expect(debt.isRepayed).toBeFalsy()
+			expect(debt.paybacks).toHaveLength(0)
+			expect(debt.payingBack).toHaveLength(0)
+		})
+	})
+
+	test('Can repay a debt with a transfer', async ({
+		browser,
+		page,
+		isMobile,
+	}) => {
+		const groupCard = page.locator('.MuiCard-root').first()
+		const repayButton = page.getByRole('button', { name: 'payback' })
+		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
+
+		const secondUserContext = await browser.newContext({
+			storageState: isMobile
+				? 'playwright/.auth/bob.json'
+				: 'playwright/.auth/alice.json',
+		})
+		const secondUserPage = await secondUserContext.newPage()
+		const historyButton = secondUserPage.getByRole('button', {
+			name: 'history',
+		})
+		const historyCloseButton = secondUserPage.getByRole('button', {
+			name: 'history-close',
+		})
+		const expenseHistory = secondUserPage
+			.getByRole('button')
+			.filter({ hasText: `${isMobile ? 'Bob' : 'Alice'} à dépensé` })
+		const deleteExpenseButton = secondUserPage.getByRole('button', {
+			name: 'delete',
+		})
+		const consfirmButton = secondUserPage.getByRole('button', {
+			name: 'oui',
+		})
+		const secondUserRepayButton = secondUserPage.getByRole('button', {
+			name: 'payback',
+		})
+
+		await secondUserPage.goto('/')
+
+		const secondGroupCard = secondUserPage.locator('.MuiCard-root').first()
+
+		if (!isMobile) {
+			await secondGroupCard.click()
+		}
+
+		await createExpense(secondUserPage, secondGroupCard, 100, 'test')
+
+		await page.goto('/')
+
+		if (!isMobile) {
+			await groupCard.click()
 		}
 
 		await expect(repayButton).toBeVisible()
@@ -112,5 +469,35 @@ test.describe('Debts features', () => {
 		await submitButton.click()
 
 		await expect(repayButton).toBeHidden()
+		await page.waitForTimeout(1000)
+
+		let transfers = await prisma.transfer.findMany({
+			select: { isConsumed: true },
+		})
+
+		expect(transfers.length).toBe(1)
+		expect(transfers[0].isConsumed).toBeTruthy()
+
+		await historyButton.click()
+
+		await expect(expenseHistory).toBeVisible()
+		await expenseHistory.click()
+		await expect(deleteExpenseButton).toBeVisible()
+		await deleteExpenseButton.click()
+		await expect(consfirmButton).toBeVisible()
+		await consfirmButton.click()
+
+		await expect(expenseHistory).toBeHidden()
+		await historyCloseButton.click()
+
+		await expect(secondUserRepayButton).toBeVisible()
+		await secondUserContext.close()
+
+		transfers = await prisma.transfer.findMany({
+			select: { isConsumed: true },
+		})
+
+		expect(transfers.length).toBe(1)
+		expect(transfers[0].isConsumed).toBeFalsy()
 	})
 })

@@ -148,7 +148,7 @@ model Debt {
   isRepayed Boolean @default(false)
 
   expenseId Int
-  expense   Expense @relation(fields: [expenseId], references: [id])
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
 
   debtorId String
   debtor   User   @relation(fields: [debtorId], references: [id])
@@ -162,13 +162,13 @@ model Payback {
   amount Int
 
   debtId Int
-  debt   Debt @relation(name: "debt", fields: [debtId], references: [id])
+  debt   Debt @relation(name: "debt", fields: [debtId], references: [id], onDelete: Cascade)
 
   counterDebtId Int?
-  counterDebt   Debt? @relation(name: "counterDebt", fields: [counterDebtId], references: [id])
+  counterDebt   Debt? @relation(name: "counterDebt", fields: [counterDebtId], references: [id], onDelete: Cascade)
 
   transferId Int?
-  transfer   Transfer? @relation(fields: [transferId], references: [id])
+  transfer   Transfer? @relation(fields: [transferId], references: [id], onDelete: Cascade)
 }
 
 model Transfer {

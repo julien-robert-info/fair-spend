@@ -1,5 +1,5 @@
 'use server'
-import { getDebtNetAmount } from '@/utils/debt'
+import { getDebtNetAmount, getTransferNetAmount } from '@/utils/debt'
 import prisma from '@/utils/prisma'
 import { USD } from '@dinero.js/currencies'
 import {
@@ -12,7 +12,6 @@ import {
 	lessThanOrEqual,
 	toSnapshot,
 } from 'dinero.js'
-import { getTransferNetAmount } from './transfer'
 
 export type PaybackDetails = {
 	amount: number

@@ -3,20 +3,13 @@ import prisma from '@/utils/prisma'
 import { authOrError } from '@/utils/auth'
 import { revalidatePath } from 'next/cache'
 import { USD } from '@dinero.js/currencies'
-import {
-	add,
-	Dinero,
-	dinero,
-	equal,
-	isNegative,
-	isZero,
-	subtract,
-} from 'dinero.js'
+import { add, dinero, equal, isNegative, isZero } from 'dinero.js'
 import { calcultatePaybacks, PaybackDetails } from '@/actions/payback'
 import { repayDebts } from './debt'
 import { FormAction } from '@/components/Form'
 import * as Sentry from '@sentry/nextjs'
 import { parse } from 'date-fns'
+import { getTransferNetAmount } from '@/utils/debt'
 
 export type TransferDetail = {
 	amount: number
@@ -44,6 +37,62 @@ export const getTransfers = async (
 				{ sender: { email: user?.email! } },
 				{ receiver: { email: user?.email! } },
 			],
+		},
+	})
+
+	return transfers
+}
+
+export const getReceivedTransfers = async (
+	groupId: number
+): Promise<
+	Array<
+		Omit<TransferDetail, 'date' | 'receiver' | 'paybacks'> & {
+			paybacks: { amount: number }[]
+		}
+	>
+> => {
+	const user = await authOrError()
+
+	const transfers = await prisma.transfer.findMany({
+		select: {
+			amount: true,
+			sender: { select: { name: true, image: true, email: true } },
+			paybacks: { select: { amount: true } },
+		},
+		where: {
+			groupId: groupId,
+			receiver: { email: user?.email! },
+			isConsumed: false,
+		},
+	})
+
+	return transfers
+}
+
+export const getsendedTransfers = async (
+	groupId: number
+): Promise<
+	{
+		amount: number
+		receiver: { name: string | null }
+		paybacks: {
+			amount: number
+		}[]
+	}[]
+> => {
+	const user = await authOrError()
+
+	const transfers = await prisma.transfer.findMany({
+		select: {
+			amount: true,
+			receiver: { select: { name: true, image: true, email: true } },
+			paybacks: { select: { amount: true } },
+		},
+		where: {
+			groupId: groupId,
+			sender: { email: user?.email! },
+			isConsumed: false,
 		},
 	})
 
@@ -117,50 +166,29 @@ export const createTransfer: FormAction = async (prevState, formData) => {
 	)
 }
 
-export const getTransferNetAmount = (
-	transfer: Omit<
-		TransferDetail,
-		'sender' | 'receiver' | 'date' | 'paybacks'
-	> & { paybacks: Omit<PaybackDetails, 'debtId'>[] }
-): Dinero<number> => {
-	return subtract(
-		dinero({ amount: transfer.amount, currency: USD }),
-		transfer.paybacks?.reduce(
-			(acc, { amount }) =>
-				add(
-					acc,
-					dinero({
-						amount: amount,
-						currency: USD,
-					})
-				),
-			dinero({ amount: 0, currency: USD })
-		) ?? dinero({ amount: 0, currency: USD })
-	)
-}
-
 export const consumeTransfers = async (transferIds: number[]) => {
 	try {
-		await Promise.all(
-			transferIds.map(async (transferId) => {
-				const transfer = await prisma.transfer.findFirstOrThrow({
-					select: {
-						amount: true,
-						isConsumed: true,
-						paybacks: {
-							select: { amount: true, transferId: true },
-						},
-					},
-					where: { id: transferId },
-				})
+		const transfers = await prisma.transfer.findMany({
+			select: {
+				id: true,
+				amount: true,
+				isConsumed: true,
+				paybacks: {
+					select: { amount: true },
+				},
+			},
+			where: { id: { in: transferIds } },
+		})
 
+		await Promise.all(
+			transfers.map(async (transfer) => {
 				const netAmount = getTransferNetAmount(transfer)
 				const isConsumed = isNegative(netAmount) || isZero(netAmount)
 
 				if (isConsumed !== transfer.isConsumed) {
 					await prisma.transfer.update({
 						data: { isConsumed: isConsumed },
-						where: { id: transferId },
+						where: { id: transfer.id },
 					})
 				}
 			})

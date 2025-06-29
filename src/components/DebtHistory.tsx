@@ -6,22 +6,35 @@ import {
 	AccordionSummary,
 	Backdrop,
 	Box,
+	Button,
 	CircularProgress,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
+	IconButton,
 	List,
 	ListItem,
 	ListItemAvatar,
 	ListItemText,
+	Stack,
 	Typography,
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import PriceCheckIcon from '@mui/icons-material/PriceCheck'
 import MoneyOffIcon from '@mui/icons-material/MoneyOff'
+import DeleteIcon from '@mui/icons-material/Delete'
 import { GroupDetails } from '@/actions/group'
 import { HistoryData, getHistoryData } from '@/utils/history'
 import UserAvatar from './UserAvatar'
+import { deleteExpense } from '@/actions/expense'
 
-export const MemberHistory = ({ group }: { group: GroupDetails }) => {
+export const DebtHistory = ({ group }: { group: GroupDetails }) => {
 	const [data, setData] = React.useState<HistoryData[] | undefined>()
+	const [openConfirm, setOpenConfirm] = React.useState(false)
+	const [confirmAction, setConfirmAction] =
+		React.useState<() => Promise<void>>()
 
 	React.useEffect(() => {
 		const updatedata = async (groupId: number) => {
@@ -32,6 +45,16 @@ export const MemberHistory = ({ group }: { group: GroupDetails }) => {
 			updatedata(group.id)
 		}
 	}, [group])
+
+	const handleOpenConfirm = (expenseId: number) => {
+		setConfirmAction(() => () => handleDeleteExpense(expenseId))
+		setOpenConfirm(true)
+	}
+
+	const handleDeleteExpense = async (expenseId: number) => {
+		setOpenConfirm(false)
+		deleteExpense(expenseId)
+	}
 
 	return (
 		<>
@@ -70,9 +93,21 @@ export const MemberHistory = ({ group }: { group: GroupDetails }) => {
 							</Typography>
 						</AccordionSummary>
 						<AccordionDetails>
-							<Typography>
-								description: {item.description}
-							</Typography>
+							<Stack direction='row' alignItems='center'>
+								<Typography sx={{ flexGrow: 1 }}>
+									description: {item.description}
+								</Typography>
+								<Box>
+									<IconButton
+										aria-label='delete'
+										onClick={() =>
+											handleOpenConfirm(item.id)
+										}
+									>
+										<DeleteIcon />
+									</IconButton>
+								</Box>
+							</Stack>
 							<List>
 								{item.debts.map((debt, j) => (
 									<ListItem
@@ -111,6 +146,20 @@ export const MemberHistory = ({ group }: { group: GroupDetails }) => {
 					</Accordion>
 				)
 			)}
+			<Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+				<DialogTitle>Confirmation</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						Souhaitez-vous vraiment supprimer cette dépense ?
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setOpenConfirm(false)}>Non</Button>
+					<Button onClick={confirmAction} autoFocus>
+						Oui
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</>
 	)
 }

@@ -3,7 +3,7 @@ import prisma from '@/utils/prisma'
 import { authOrError } from '@/utils/auth'
 import { revalidatePath } from 'next/cache'
 import { calculateDebts, repayDebts } from '@/actions/debt'
-import { Debt, Expense } from '@prisma/client'
+import { Debt, Expense, Prisma } from '@prisma/client'
 import { calcultatePaybacks } from '@/actions/payback'
 import { dinero, toSnapshot } from 'dinero.js'
 import { USD } from '@dinero.js/currencies'
@@ -12,8 +12,12 @@ import * as Sentry from '@sentry/nextjs'
 import { parse } from 'date-fns'
 import { consumeTransfers } from './transfer'
 
-export type ExpenseDetail = Omit<Expense, 'id' | 'payerId' | 'groupId'> & {
-	payer: { name: string | null; image: string | null }
+export type ExpenseDetail = Omit<Expense, 'payerId' | 'groupId'> & {
+	payer: {
+		name?: string | null
+		image?: string | null
+		email?: string | null
+	}
 	debts: Array<
 		Omit<Debt, 'id' | 'expenseId' | 'debtorId'> & {
 			debtor: {
@@ -32,6 +36,7 @@ export const getExpenses = async (
 
 	const expenses = await prisma.expense.findMany({
 		select: {
+			id: true,
 			amount: true,
 			date: true,
 			description: true,
@@ -147,4 +152,39 @@ export const createExpense: FormAction = async (prevState, formData) => {
 			return { message: 'success', result: expense }
 		}
 	)
+}
+
+export const deleteExpense = async (expenseId: number) => {
+	const user = await authOrError()
+
+	try {
+		//recalculate isRepay for deleted paybacks with counterdebt
+		const debts = await prisma.debt.findMany({
+			select: { id: true },
+			where: { paybacks: { some: { counterDebt: { expenseId } } } },
+		})
+
+		//recalculate isconsumed for deleted paybacks with transfer
+		const transfers = await prisma.transfer.findMany({
+			select: { id: true },
+			where: { paybacks: { some: { debt: { expenseId } } } },
+		})
+
+		await prisma.expense.delete({
+			where: { id: expenseId, payer: { email: user?.email! } },
+		})
+
+		await repayDebts(debts.map((debt) => debt.id))
+		await consumeTransfers(transfers.map((transfer) => transfer.id))
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			if (error.code === 'P2025') {
+				return { message: 'Dépense non trouvée' }
+			}
+		}
+		throw error
+	}
+	revalidatePath('/')
+
+	return { message: 'success' }
 }

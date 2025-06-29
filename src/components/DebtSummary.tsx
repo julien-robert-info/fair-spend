@@ -19,7 +19,7 @@ import TransferForm, { TransferFormProps } from '@/forms/TransferForm'
 import { getPanelData, PanelData } from '@/utils/debt'
 import { GroupDetails } from '@/actions/group'
 
-export const DebtList = ({ group }: { group: GroupDetails }) => {
+export const DebtSummary = ({ group }: { group: GroupDetails }) => {
 	const [data, setData] = React.useState<PanelData | undefined>()
 	const [openForm, setOpenForm] = React.useState(false)
 	const [formValues, setFormValues] = React.useState<

@@ -18,8 +18,8 @@ import { GroupDetails } from '@/actions/group'
 import { ShareMode } from '@prisma/client'
 import IncomeForm from '@/forms/IncomeForm'
 import { getIncome } from '@/actions/member'
-import { DebtList } from '@/components/DebtList'
-import { MemberHistory } from '@/components/MemberHistory'
+import { DebtSummary } from '@/components/DebtSummary'
+import { DebtHistory } from '@/components/DebtHistory'
 import GroupMenu from './GroupMenu'
 import { dineroFormat } from '@/utils/dinero'
 
@@ -88,9 +88,9 @@ const DebtsPanel = ({
 						<GroupMenu group={group} />
 					</Stack>
 					{tab === 0 ? (
-						<DebtList group={group} />
+						<DebtSummary group={group} />
 					) : (
-						<MemberHistory group={group} />
+						<DebtHistory group={group} />
 					)}
 					<Dialog open={openForm} onClose={() => setOpenForm(false)}>
 						<DialogTitle>Saisir votre revenu mensuel</DialogTitle>

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { SwipeToLocator } from '@/utils/test'
+import { swipeToLocator } from '@/utils/test'
 
 test('Show Groups Dashboard', async ({ page }) => {
 	await page.goto('/')
@@ -24,7 +24,7 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 	const settingButton = page.getByRole('button', { name: 'settings' })
 
 	if (isMobile) {
-		SwipeToLocator(page, equitableModeCard)
+		await swipeToLocator(page, equitableModeCard)
 	} else {
 		equitableModeCard.click()
 	}
@@ -34,7 +34,7 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 
 	await page.reload()
 	if (isMobile) {
-		SwipeToLocator(page, fairModeCard)
+		await swipeToLocator(page, fairModeCard)
 	} else {
 		fairModeCard.click()
 	}

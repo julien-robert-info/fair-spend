@@ -1,5 +1,6 @@
 import prisma from '@/utils/prisma'
-import { SwipeToLocator } from '@/utils/test'
+import { swipeToLocator } from '@/utils/test'
+import { randNumber } from '@ngneat/falso'
 import { test, expect } from '@playwright/test'
 
 test.describe('Groups features', () => {
@@ -159,7 +160,7 @@ test.describe('Groups features', () => {
 		await page.reload()
 
 		if (isMobile) {
-			SwipeToLocator(page, card)
+			await swipeToLocator(page, card)
 		} else {
 			await card.click()
 		}
@@ -183,14 +184,44 @@ test.describe('Groups features', () => {
 		await secondUserPage.reload()
 
 		if (isMobile) {
-			SwipeToLocator(secondUserPage, secondUserCard)
+			await swipeToLocator(secondUserPage, secondUserCard)
 		} else {
 			await secondUserCard.click()
 		}
+		await expect(secondUserCard).toBeVisible()
 
 		await secondUserPage.getByRole('button', { name: 'menu' }).click()
 		await expect(
 			secondUserPage.getByRole('menuitem', { name: 'Supprimer' })
 		).toBeVisible()
+		await secondUserContext.close()
+	})
+
+	test('Can set Income on Fair group', async ({ page, isMobile }) => {
+		await page.goto('/')
+
+		const fairModeCard = page
+			.locator('.MuiCard-root')
+			.filter({ has: page.getByTestId('VolunteerActivismIcon') })
+			.first()
+		const settingButton = page.getByRole('button', { name: 'settings' })
+		const incomeFormFields = page.getByLabel('Montant *')
+		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
+
+		if (isMobile) {
+			await swipeToLocator(page, fairModeCard)
+		} else {
+			fairModeCard.click()
+		}
+		await expect(settingButton).toBeVisible()
+
+		const income = randNumber({ fraction: 2 }).toString()
+
+		await settingButton.click()
+		await incomeFormFields.fill(income)
+		await submitButton.click()
+
+		await settingButton.click()
+		await expect(incomeFormFields).toHaveValue(income)
 	})
 })
