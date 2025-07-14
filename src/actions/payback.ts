@@ -71,7 +71,10 @@ export const calcultatePaybacks = async (
 	let paybacks: PaybackDetails[] = []
 
 	let i = 0
-	while (lessThan(paybacksAmount, totalAmount) && debts.length > i) {
+	while (
+		lessThan(paybacksAmount, totalAmount) &&
+		remainingAmounts.length > i
+	) {
 		const remainingAmount = remainingAmounts[i].amount
 
 		if (isPositive(remainingAmount) && !isZero(remainingAmount)) {

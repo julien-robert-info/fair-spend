@@ -10,8 +10,10 @@ import { FormAction } from '@/components/Form'
 import * as Sentry from '@sentry/nextjs'
 import { parse } from 'date-fns'
 import { getTransferNetAmount } from '@/utils/debt'
+import { Prisma } from '@prisma/client'
 
 export type TransferDetail = {
+	id: number
 	amount: number
 	date: Date
 	sender: { name: string | null; image: string | null }
@@ -26,6 +28,7 @@ export const getTransfers = async (
 
 	const transfers = await prisma.transfer.findMany({
 		select: {
+			id: true,
 			amount: true,
 			date: true,
 			sender: { select: { name: true, image: true } },
@@ -56,6 +59,7 @@ export const getReceivedTransfers = async (
 
 	const transfers = await prisma.transfer.findMany({
 		select: {
+			id: true,
 			amount: true,
 			sender: { select: { name: true, image: true, email: true } },
 			paybacks: { select: { amount: true } },
@@ -196,4 +200,32 @@ export const consumeTransfers = async (transferIds: number[]) => {
 	} catch (error) {
 		throw error
 	}
+}
+
+export const deleteTransfer = async (transferId: number) => {
+	const user = await authOrError()
+
+	try {
+		//recalculate isRepay for debts deleted paybacks
+		const debts = await prisma.debt.findMany({
+			select: { id: true },
+			where: { paybacks: { some: { transferId } } },
+		})
+
+		await prisma.transfer.delete({
+			where: { id: transferId, sender: { email: user?.email! } },
+		})
+
+		await repayDebts(debts.map((debt) => debt.id))
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			if (error.code === 'P2025') {
+				return { message: 'Transfert non trouvée' }
+			}
+		}
+		throw error
+	}
+	revalidatePath('/')
+
+	return { message: 'success' }
 }

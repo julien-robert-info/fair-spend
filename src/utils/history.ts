@@ -5,6 +5,8 @@ import { USD } from '@dinero.js/currencies'
 import { dineroFormat } from '@/utils/dinero'
 import { Debt } from '@prisma/client'
 
+export type HType = 'expense' | 'transfer'
+
 type expenseHistory = Omit<ExpenseDetail, 'amount' | 'debts'> & {
 	hType: 'expense'
 	amount: string
@@ -55,9 +57,12 @@ export const getHistoryData = async (
 		})
 	)
 
-	const history = [...expenses, ...transfer].sort(
-		(a, b) => b.date.valueOf() - a.date.valueOf()
-	)
+	const history = [...expenses, ...transfer].sort((a, b) => {
+		if (a.date.valueOf() === b.date.valueOf() && a.hType === b.hType) {
+			return b.id - a.id
+		}
+		return b.date.valueOf() - a.date.valueOf()
+	})
 
 	return history
 }

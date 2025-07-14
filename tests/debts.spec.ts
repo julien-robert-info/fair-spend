@@ -277,7 +277,9 @@ test.describe('Debts features', () => {
 		const expenseHistory = page
 			.getByRole('button')
 			.filter({ hasText: `${isMobile ? 'Alice' : 'Bob'} à dépensé` })
-		const deleteExpenseButton = page.getByRole('button', { name: 'delete' })
+		const deleteExpenseButton = page.getByRole('button', {
+			name: 'delete_expense',
+		})
 		const consfirmButton = page.getByRole('button', { name: 'oui' })
 
 		const secondUserContext = await browser.newContext({
@@ -414,12 +416,27 @@ test.describe('Debts features', () => {
 		})
 	})
 
-	test('Can repay a debt with a transfer', async ({
+	test('Can repay a debt with a transfer and delete it', async ({
 		browser,
 		page,
 		isMobile,
 	}) => {
 		const groupCard = page.locator('.MuiCard-root').first()
+		const historyButton = page.getByRole('button', {
+			name: 'history',
+		})
+		const historyCloseButton = page.getByRole('button', {
+			name: 'history-close',
+		})
+		const transferHistory = page.getByText(
+			`${isMobile ? 'Alice' : 'Bob'} à remboursé`
+		)
+		const deleteTransferButton = page.getByRole('button', {
+			name: 'delete_transfer',
+		})
+		const consfirmButton = page.getByRole('button', {
+			name: 'oui',
+		})
 		const repayButton = page.getByRole('button', { name: 'payback' })
 		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
 
@@ -429,19 +446,22 @@ test.describe('Debts features', () => {
 				: 'playwright/.auth/alice.json',
 		})
 		const secondUserPage = await secondUserContext.newPage()
-		const historyButton = secondUserPage.getByRole('button', {
+		const secondUserHistoryButton = secondUserPage.getByRole('button', {
 			name: 'history',
 		})
-		const historyCloseButton = secondUserPage.getByRole('button', {
-			name: 'history-close',
-		})
+		const secondUserHistoryCloseButton = secondUserPage.getByRole(
+			'button',
+			{
+				name: 'history-close',
+			}
+		)
 		const expenseHistory = secondUserPage
 			.getByRole('button')
 			.filter({ hasText: `${isMobile ? 'Bob' : 'Alice'} à dépensé` })
 		const deleteExpenseButton = secondUserPage.getByRole('button', {
-			name: 'delete',
+			name: 'delete_expense',
 		})
-		const consfirmButton = secondUserPage.getByRole('button', {
+		const secondUserConsfirmButton = secondUserPage.getByRole('button', {
 			name: 'oui',
 		})
 		const secondUserRepayButton = secondUserPage.getByRole('button', {
@@ -456,6 +476,7 @@ test.describe('Debts features', () => {
 			await secondGroupCard.click()
 		}
 
+		// Second user create expense
 		await createExpense(secondUserPage, secondGroupCard, 100, 'test')
 
 		await page.goto('/')
@@ -464,6 +485,7 @@ test.describe('Debts features', () => {
 			await groupCard.click()
 		}
 
+		// User repay with transfer
 		await expect(repayButton).toBeVisible()
 		await repayButton.click()
 		await submitButton.click()
@@ -472,32 +494,75 @@ test.describe('Debts features', () => {
 		await page.waitForTimeout(1000)
 
 		let transfers = await prisma.transfer.findMany({
-			select: { isConsumed: true },
+			select: {
+				isConsumed: true,
+				paybacks: { select: { debt: { select: { isRepayed: true } } } },
+			},
 		})
 
 		expect(transfers.length).toBe(1)
 		expect(transfers[0].isConsumed).toBeTruthy()
+		let paybacks = transfers.flatMap((transfer) => transfer.paybacks)
+		expect(paybacks.length).toBe(1)
+		expect(paybacks[0].debt.isRepayed).toBeTruthy()
 
-		await historyButton.click()
+		await secondUserHistoryButton.click()
 
+		// Second user delete expense
 		await expect(expenseHistory).toBeVisible()
 		await expenseHistory.click()
 		await expect(deleteExpenseButton).toBeVisible()
 		await deleteExpenseButton.click()
-		await expect(consfirmButton).toBeVisible()
-		await consfirmButton.click()
+		await expect(secondUserConsfirmButton).toBeVisible()
+		await secondUserConsfirmButton.click()
 
 		await expect(expenseHistory).toBeHidden()
-		await historyCloseButton.click()
+		await secondUserHistoryCloseButton.click()
 
 		await expect(secondUserRepayButton).toBeVisible()
-		await secondUserContext.close()
 
 		transfers = await prisma.transfer.findMany({
-			select: { isConsumed: true },
+			select: {
+				isConsumed: true,
+				paybacks: { select: { debt: { select: { isRepayed: true } } } },
+			},
 		})
 
 		expect(transfers.length).toBe(1)
 		expect(transfers[0].isConsumed).toBeFalsy()
+		expect(transfers.flatMap((transfer) => transfer.paybacks).length).toBe(
+			0
+		)
+
+		// Second user create expense again
+		await createExpense(secondUserPage, secondGroupCard, 100, 'test')
+		await page.waitForTimeout(1000)
+		await secondUserContext.close()
+
+		transfers = await prisma.transfer.findMany({
+			select: {
+				isConsumed: true,
+				paybacks: { select: { debt: { select: { isRepayed: true } } } },
+			},
+		})
+
+		expect(transfers.length).toBe(1)
+		expect(transfers[0].isConsumed).toBeTruthy()
+		paybacks = transfers.flatMap((transfer) => transfer.paybacks)
+		expect(paybacks.length).toBe(1)
+		expect(paybacks[0].debt.isRepayed).toBeTruthy()
+
+		await historyButton.click()
+		await expect(transferHistory).toBeVisible()
+		await transferHistory.click()
+		await expect(deleteTransferButton).toBeVisible()
+		await deleteTransferButton.click()
+		await expect(consfirmButton).toBeVisible()
+		await consfirmButton.click()
+
+		await expect(transferHistory).toBeHidden()
+
+		await historyCloseButton.click()
+		await expect(repayButton).toBeVisible()
 	})
 })

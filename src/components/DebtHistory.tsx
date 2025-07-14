@@ -1,6 +1,7 @@
 'use client'
 import React from 'react'
 import {
+	Alert,
 	Accordion,
 	AccordionDetails,
 	AccordionSummary,
@@ -26,13 +27,18 @@ import PriceCheckIcon from '@mui/icons-material/PriceCheck'
 import MoneyOffIcon from '@mui/icons-material/MoneyOff'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { GroupDetails } from '@/actions/group'
-import { HistoryData, getHistoryData } from '@/utils/history'
+import { HType, HistoryData, getHistoryData } from '@/utils/history'
 import UserAvatar from './UserAvatar'
 import { deleteExpense } from '@/actions/expense'
+import { deleteTransfer } from '@/actions/transfer'
 
 export const DebtHistory = ({ group }: { group: GroupDetails }) => {
 	const [data, setData] = React.useState<HistoryData[] | undefined>()
 	const [openConfirm, setOpenConfirm] = React.useState(false)
+	const [confirmError, setConfirmError] = React.useState<string | undefined>()
+	const [confirmText, setConfirmText] = React.useState(
+		'Souhaitez-vous vraiment supprimer cette dépense ?'
+	)
 	const [confirmAction, setConfirmAction] =
 		React.useState<() => Promise<void>>()
 
@@ -46,14 +52,36 @@ export const DebtHistory = ({ group }: { group: GroupDetails }) => {
 		}
 	}, [group])
 
-	const handleOpenConfirm = (expenseId: number) => {
-		setConfirmAction(() => () => handleDeleteExpense(expenseId))
+	const handleOpenConfirm = (hType: HType, itemId: number) => {
+		if (hType === 'transfer') {
+			setConfirmText('Souhaitez vous supprimer ce budget partagé')
+			setConfirmAction(() => () => handleDeleteTransfer(itemId))
+		} else {
+			setConfirmText('Souhaitez vous supprimer ce budget partagé')
+			setConfirmAction(() => () => handleDeleteExpense(itemId))
+		}
+		setConfirmError(undefined)
 		setOpenConfirm(true)
 	}
 
 	const handleDeleteExpense = async (expenseId: number) => {
-		setOpenConfirm(false)
-		deleteExpense(expenseId)
+		const result = await deleteExpense(expenseId)
+		if (result.message === 'success') {
+			setConfirmError(undefined)
+			setOpenConfirm(false)
+		} else {
+			setConfirmError(result.message)
+		}
+	}
+
+	const handleDeleteTransfer = async (transferId: number) => {
+		const result = await deleteTransfer(transferId)
+		if (result.message === 'success') {
+			setConfirmError(undefined)
+			setOpenConfirm(false)
+		} else {
+			setConfirmError(result.message)
+		}
 	}
 
 	return (
@@ -68,46 +96,54 @@ export const DebtHistory = ({ group }: { group: GroupDetails }) => {
 			>
 				<CircularProgress />
 			</Backdrop>
-			{data?.map((item, i) =>
-				item.hType === 'transfer' ? (
-					<Box key={`t${i}`} sx={{ px: 2, my: '12px' }}>
+			{data?.map((item, i) => (
+				<Accordion key={`e${i}`}>
+					<AccordionSummary
+						expandIcon={<ExpandMoreIcon />}
+						aria-controls={`panel${i}-content`}
+						id={`panel${i}-header`}
+					>
 						<Typography component='span'>
-							{`${item.sender.name} à transféré ${item.amount}€ à ${item.receiver.name}`}
+							{item.hType === 'transfer'
+								? `${item.sender.name} à remboursé ${item.amount}€`
+								: `${item.payer.name} à dépensé ${item.amount}€`}
 						</Typography>
 						<Typography component='span' sx={{ ml: 2 }}>
 							({item.date.toLocaleDateString()})
 						</Typography>
-					</Box>
-				) : (
-					<Accordion key={`e${i}`}>
-						<AccordionSummary
-							expandIcon={<ExpandMoreIcon />}
-							aria-controls={`panel${i}-content`}
-							id={`panel${i}-header`}
-						>
-							<Typography component='span'>
-								{`${item.payer.name} à dépensé ${item.amount}€`}
-							</Typography>
-							<Typography component='span' sx={{ ml: 2 }}>
-								({item.date.toLocaleDateString()})
-							</Typography>
-						</AccordionSummary>
-						<AccordionDetails>
-							<Stack direction='row' alignItems='center'>
+					</AccordionSummary>
+					<AccordionDetails>
+						<Stack direction='row' alignItems='center'>
+							{item.hType === 'expense' ? (
 								<Typography sx={{ flexGrow: 1 }}>
 									description: {item.description}
 								</Typography>
-								<Box>
-									<IconButton
-										aria-label='delete'
-										onClick={() =>
-											handleOpenConfirm(item.id)
-										}
-									>
-										<DeleteIcon />
-									</IconButton>
-								</Box>
-							</Stack>
+							) : (
+								<Stack
+									direction='row'
+									alignItems='center'
+									gap={2}
+									sx={{
+										flexGrow: 1,
+										bgcolor: 'success.light',
+										py: 1,
+										px: 2,
+									}}
+								>
+									<UserAvatar user={item.receiver} />
+									<Typography>{`${item.amount}€`}</Typography>
+								</Stack>
+							)}
+							<IconButton
+								aria-label={`delete_${item.hType}`}
+								onClick={() =>
+									handleOpenConfirm(item.hType, item.id)
+								}
+							>
+								<DeleteIcon />
+							</IconButton>
+						</Stack>
+						{item.hType === 'expense' && item.debts.length > 0 && (
 							<List>
 								{item.debts.map((debt, j) => (
 									<ListItem
@@ -142,16 +178,17 @@ export const DebtHistory = ({ group }: { group: GroupDetails }) => {
 									</ListItem>
 								))}
 							</List>
-						</AccordionDetails>
-					</Accordion>
-				)
-			)}
+						)}
+					</AccordionDetails>
+				</Accordion>
+			))}
 			<Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
 				<DialogTitle>Confirmation</DialogTitle>
 				<DialogContent>
-					<DialogContentText>
-						Souhaitez-vous vraiment supprimer cette dépense ?
-					</DialogContentText>
+					{confirmError && (
+						<Alert severity='error'>{confirmError}</Alert>
+					)}
+					<DialogContentText>{confirmText}</DialogContentText>
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={() => setOpenConfirm(false)}>Non</Button>

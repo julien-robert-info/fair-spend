@@ -145,7 +145,7 @@ export const createExpense: FormAction = async (prevState, formData) => {
 						.map((payback) => payback.transferId!),
 				])
 			} catch (error) {
-				throw error
+				return { message: error as string }
 			}
 			revalidatePath('/')
 
