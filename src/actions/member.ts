@@ -125,7 +125,9 @@ export const setIncome: FormAction = async (prevState, formData) => {
 			)
 			if (isNaN(rawIncome) || rawIncome <= 0) {
 				return {
-					message: `Montant invalide : ${formData.get('income')}`,
+					message: `Montant invalide : ${
+						formData.get('income') as string
+					}`,
 				}
 			}
 			const income = dinero({
@@ -143,7 +145,7 @@ export const setIncome: FormAction = async (prevState, formData) => {
 					},
 				})
 			} catch (error) {
-				throw error
+				return { message: error as string }
 			}
 			revalidatePath('/')
 

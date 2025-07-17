@@ -52,9 +52,9 @@ export const DebtSummary = ({ group }: { group: GroupDetails }) => {
 				<>
 					<Typography>{`Solde : ${data.balance}€`}</Typography>
 					<List>
-						{data.debtList.map((debt, i) => (
+						{data.debtList.map((debt) => (
 							<ListItem
-								key={i}
+								key={debt.user?.name}
 								{...(debt.isNegative && {
 									secondaryAction: (
 										<IconButton

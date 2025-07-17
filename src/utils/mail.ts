@@ -15,7 +15,11 @@ export const inviteMail = async (email: string, groupName: string) => {
 	const failed = result.rejected.concat(result.pending).filter(Boolean)
 
 	if (failed.length) {
-		throw new Error(`Email (${failed.join(', ')}) could not be sent`)
+		throw new Error(
+			`Email (${failed
+				.map((fail) => fail as string)
+				.join(', ')}) could not be sent`
+		)
 	}
 }
 

@@ -9,7 +9,7 @@ import { FormAction } from '@/components/Form'
 
 export type InviteDetail = {
 	group: Omit<GroupDetails, 'members' | 'owner' | 'isOwner'> & {
-		members: { isIncomeSet: Boolean; user: Omit<UserDetails, 'email'> }[]
+		members: { isIncomeSet: boolean; user: Omit<UserDetails, 'email'> }[]
 	}
 }
 

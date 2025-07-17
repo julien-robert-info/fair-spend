@@ -12,7 +12,7 @@ export type UserDetails = {
 }
 
 export type GroupDetails = Omit<Group, 'ownerId'> & {
-	members: { isIncomeSet: Boolean; user: UserDetails }[]
+	members: { isIncomeSet: boolean; user: UserDetails }[]
 	owner: { email: string }
 	isOwner: boolean
 }

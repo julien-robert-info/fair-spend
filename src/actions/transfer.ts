@@ -161,7 +161,7 @@ export const createTransfer: FormAction = async (prevState, formData) => {
 
 				await repayDebts(paybacks.map((payback) => payback.debtId))
 			} catch (error) {
-				throw error
+				return { message: error as string }
 			}
 			revalidatePath('/')
 
@@ -198,7 +198,7 @@ export const consumeTransfers = async (transferIds: number[]) => {
 			})
 		)
 	} catch (error) {
-		throw error
+		return { message: error as string }
 	}
 }
 
@@ -223,7 +223,7 @@ export const deleteTransfer = async (transferId: number) => {
 				return { message: 'Transfert non trouvée' }
 			}
 		}
-		throw error
+		return { message: error as string }
 	}
 	revalidatePath('/')
 

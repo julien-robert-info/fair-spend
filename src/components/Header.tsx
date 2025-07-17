@@ -73,7 +73,7 @@ const Header = ({ user }: { user: DefaultSession['user'] }) => {
 									aria-controls='menu-appbar'
 									aria-haspopup='true'
 									aria-expanded={
-										Boolean(anchorEl) ? 'true' : undefined
+										anchorEl ? 'true' : undefined
 									}
 									onClick={handleMenu}
 									color='inherit'

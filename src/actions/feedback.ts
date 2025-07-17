@@ -23,7 +23,7 @@ ${message}`
 			parse_mode: 'Markdown',
 		})
 	} catch (error) {
-		throw error
+		return { message: error as string }
 	}
 
 	return { message: 'success' }

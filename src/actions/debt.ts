@@ -95,7 +95,7 @@ export const calculateDebts = async (
 		const incomeArray = debtors.map((debtors) => debtors.income)
 
 		if (incomeArray.every((income) => income !== null)) {
-			shares = incomeArray as number[]
+			shares = incomeArray
 		}
 	}
 
@@ -116,19 +116,19 @@ export const calculateDebts = async (
 }
 
 export const repayDebts = async (debtIds: number[]) => {
-	try {
-		await Promise.all(
-			debtIds.map(async (debtId) => {
-				const debt = await prisma.debt.findFirstOrThrow({
-					select: {
-						amount: true,
-						isRepayed: true,
-						paybacks: { select: { amount: true } },
-						payingBack: { select: { amount: true } },
-					},
-					where: { id: debtId },
-				})
+	await Promise.all(
+		debtIds.map(async (debtId) => {
+			const debt = await prisma.debt.findFirst({
+				select: {
+					amount: true,
+					isRepayed: true,
+					paybacks: { select: { amount: true } },
+					payingBack: { select: { amount: true } },
+				},
+				where: { id: debtId },
+			})
 
+			if (debt) {
 				const netAmount = getDebtNetAmount(debt)
 				const isRepayed = isNegative(netAmount) || isZero(netAmount)
 
@@ -138,9 +138,7 @@ export const repayDebts = async (debtIds: number[]) => {
 						where: { id: debtId },
 					})
 				}
-			})
-		)
-	} catch (error) {
-		throw error
-	}
+			}
+		})
+	)
 }

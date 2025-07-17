@@ -19,7 +19,7 @@ const GroupCardContent = ({
 	...props
 }: {
 	group: InviteDetail['group']
-	isInvite?: Boolean
+	isInvite?: boolean
 } & CardContentProps) => {
 	return (
 		<CardContent {...props}>

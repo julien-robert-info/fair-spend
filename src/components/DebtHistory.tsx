@@ -6,7 +6,6 @@ import {
 	AccordionDetails,
 	AccordionSummary,
 	Backdrop,
-	Box,
 	Button,
 	CircularProgress,
 	Dialog,
@@ -96,12 +95,12 @@ export const DebtHistory = ({ group }: { group: GroupDetails }) => {
 			>
 				<CircularProgress />
 			</Backdrop>
-			{data?.map((item, i) => (
-				<Accordion key={`e${i}`}>
+			{data?.map((item) => (
+				<Accordion key={`e${item.id}`}>
 					<AccordionSummary
 						expandIcon={<ExpandMoreIcon />}
-						aria-controls={`panel${i}-content`}
-						id={`panel${i}-header`}
+						aria-controls={`panel${item.id}-content`}
+						id={`panel${item.id}-header`}
 					>
 						<Typography component='span'>
 							{item.hType === 'transfer'
@@ -145,9 +144,9 @@ export const DebtHistory = ({ group }: { group: GroupDetails }) => {
 						</Stack>
 						{item.hType === 'expense' && item.debts.length > 0 && (
 							<List>
-								{item.debts.map((debt, j) => (
+								{item.debts.map((debt) => (
 									<ListItem
-										key={`e${i}d${j}`}
+										key={`e${item.id}d${debt.debtor.name}`}
 										secondaryAction={
 											debt.isRepayed ? (
 												<PriceCheckIcon

@@ -74,7 +74,9 @@ export const createExpense: FormAction = async (prevState, formData) => {
 			)
 			if (isNaN(rawAmount) || rawAmount <= 0) {
 				return {
-					message: `Montant invalide : ${formData.get('amount')}`,
+					message: `Montant invalide : ${
+						formData.get('amount') as string
+					}`,
 				}
 			}
 			const amount = dinero({

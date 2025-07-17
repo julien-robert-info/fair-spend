@@ -50,16 +50,16 @@ const GroupCarousel: React.FC<Omit<GroupDashboardProps, 'handleOpenForm'>> = ({
 			cycleNavigation={false}
 		>
 			{...[
-				...invites.map((invite, i) => (
+				...invites.map((invite) => (
 					<InviteCard
-						key={`invite-${i}`}
+						key={`invite-${invite.group.name}`}
 						group={invite.group}
 						sx={{ minWidth: 180 }}
 					/>
 				)),
-				...groups.map((group, i) => (
+				...groups.map((group) => (
 					<GroupCard
-						key={`group-${i}`}
+						key={`group-${group.name}`}
 						group={group}
 						sx={{ minWidth: 180 }}
 					/>
