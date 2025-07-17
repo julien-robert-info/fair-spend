@@ -11,7 +11,8 @@
     "db:view": "prisma studio",
     "db:migrate": "prisma migrate dev",
     "db:format": "prisma format",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "sonar": "dotenv -e .env.local -- cross-var sonar -Dsonar.host.url=\"$SONAR_HOST_URL\" -Dsonar.token=\"$SONAR_TOKEN\""
   },
   "dependencies": {
     "@emotion/cache": "^11.11.0",
@@ -37,11 +38,14 @@
   "devDependencies": {
     "@ngneat/falso": "^7.2.0",
     "@playwright/test": "^1.44.1",
+    "@sonar/scan": "^4.3.0",
     "@types/node": "^20",
     "@types/node-telegram-bot-api": "^0.64.7",
     "@types/nodemailer": "^6.4.15",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "cross-var": "^1.1.0",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
     "prisma": "^5.13.0",
