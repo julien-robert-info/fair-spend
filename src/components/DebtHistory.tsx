@@ -133,14 +133,16 @@ export const DebtHistory = ({ group }: { group: GroupDetails }) => {
 									<Typography>{`${item.amount}€`}</Typography>
 								</Stack>
 							)}
-							<IconButton
-								aria-label={`delete_${item.hType}`}
-								onClick={() =>
-									handleOpenConfirm(item.hType, item.id)
-								}
-							>
-								<DeleteIcon />
-							</IconButton>
+							{item.owned && (
+								<IconButton
+									aria-label={`delete_${item.hType}`}
+									onClick={() =>
+										handleOpenConfirm(item.hType, item.id)
+									}
+								>
+									<DeleteIcon />
+								</IconButton>
+							)}
 						</Stack>
 						{item.hType === 'expense' && item.debts.length > 0 && (
 							<List>

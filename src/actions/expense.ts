@@ -31,7 +31,7 @@ export type ExpenseDetail = Omit<Expense, 'payerId' | 'groupId'> & {
 
 export const getExpenses = async (
 	groupId: number
-): Promise<ExpenseDetail[]> => {
+): Promise<(ExpenseDetail & { owned: boolean })[]> => {
 	const user = await authOrError()
 
 	const expenses = await prisma.expense.findMany({
@@ -40,12 +40,14 @@ export const getExpenses = async (
 			amount: true,
 			date: true,
 			description: true,
-			payer: { select: { name: true, image: true } },
+			payer: { select: { name: true, image: true, email: true } },
 			debts: {
 				select: {
 					amount: true,
 					isRepayed: true,
-					debtor: { select: { name: true, image: true } },
+					debtor: {
+						select: { name: true, image: true },
+					},
 				},
 				where: { debtor: { email: user?.email! } },
 			},
@@ -53,7 +55,10 @@ export const getExpenses = async (
 		where: { groupId: groupId },
 	})
 
-	return expenses
+	return expenses.map((expense) => ({
+		...expense,
+		owned: expense.payer.email === user?.email,
+	}))
 }
 
 export const createExpense: FormAction = async (prevState, formData) => {

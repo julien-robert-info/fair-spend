@@ -95,7 +95,7 @@ export const calculateDebts = async (
 		const incomeArray = debtors.map((debtors) => debtors.income)
 
 		if (incomeArray.every((income) => income !== null)) {
-			shares = incomeArray
+			shares = incomeArray as number[]
 		}
 	}
 

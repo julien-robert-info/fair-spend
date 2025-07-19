@@ -10,6 +10,7 @@ export type HType = 'expense' | 'transfer'
 type expenseHistory = Omit<ExpenseDetail, 'amount' | 'debts'> & {
 	hType: 'expense'
 	amount: string
+	owned: boolean
 	debts: Array<
 		Omit<Debt, 'id' | 'amount' | 'expenseId' | 'debtorId'> & {
 			amount: string
@@ -25,6 +26,7 @@ type expenseHistory = Omit<ExpenseDetail, 'amount' | 'debts'> & {
 type transferHistory = Omit<TransferDetail, 'amount'> & {
 	hType: 'transfer'
 	amount: string
+	owned: boolean
 }
 
 export type HistoryData = expenseHistory | transferHistory

@@ -16,14 +16,14 @@ export type TransferDetail = {
 	id: number
 	amount: number
 	date: Date
-	sender: { name: string | null; image: string | null }
+	sender: { name: string | null; image: string | null; email?: string | null }
 	receiver: { name: string | null; image: string | null }
 	paybacks?: PaybackDetails[]
 }
 
 export const getTransfers = async (
 	groupId: number
-): Promise<TransferDetail[]> => {
+): Promise<(TransferDetail & { owned: boolean })[]> => {
 	const user = await authOrError()
 
 	const transfers = await prisma.transfer.findMany({
@@ -31,7 +31,7 @@ export const getTransfers = async (
 			id: true,
 			amount: true,
 			date: true,
-			sender: { select: { name: true, image: true } },
+			sender: { select: { name: true, image: true, email: true } },
 			receiver: { select: { name: true, image: true } },
 		},
 		where: {
@@ -43,7 +43,10 @@ export const getTransfers = async (
 		},
 	})
 
-	return transfers
+	return transfers.map((transfer) => ({
+		...transfer,
+		owned: transfer.sender.email === user?.email,
+	}))
 }
 
 export const getReceivedTransfers = async (
