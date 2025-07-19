@@ -187,19 +187,17 @@ export const consumeTransfers = async (transferIds: number[]) => {
 			where: { id: { in: transferIds } },
 		})
 
-		await Promise.all(
-			transfers.map(async (transfer) => {
-				const netAmount = getTransferNetAmount(transfer)
-				const isConsumed = isNegative(netAmount) || isZero(netAmount)
+		for (const transfer of transfers) {
+			const netAmount = getTransferNetAmount(transfer)
+			const isConsumed = isNegative(netAmount) || isZero(netAmount)
 
-				if (isConsumed !== transfer.isConsumed) {
-					await prisma.transfer.update({
-						data: { isConsumed: isConsumed },
-						where: { id: transfer.id },
-					})
-				}
-			})
-		)
+			if (isConsumed !== transfer.isConsumed) {
+				await prisma.transfer.update({
+					data: { isConsumed: isConsumed },
+					where: { id: transfer.id },
+				})
+			}
+		}
 	} catch (error) {
 		return { message: error as string }
 	}

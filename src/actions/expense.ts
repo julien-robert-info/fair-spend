@@ -4,7 +4,7 @@ import { authOrError } from '@/utils/auth'
 import { revalidatePath } from 'next/cache'
 import { calculateDebts, repayDebts } from '@/actions/debt'
 import { Debt, Expense, Prisma } from '@prisma/client'
-import { calcultatePaybacks } from '@/actions/payback'
+import { calcultatePaybacks, PaybackDetails } from '@/actions/payback'
 import { dinero, toSnapshot } from 'dinero.js'
 import { USD } from '@dinero.js/currencies'
 import { FormAction } from '@/components/Form'
@@ -126,20 +126,19 @@ export const createExpense: FormAction = async (prevState, formData) => {
 					},
 				})
 
-				const paybacks = (
-					await Promise.all(
-						expense.debts.map(
-							async (debt) =>
-								await calcultatePaybacks(
-									groupId,
-									debt.amount,
-									user?.email!,
-									debt.debtor.email,
-									debt.id
-								)
-						)
-					)
-				).flat()
+				let paybacks: PaybackDetails[] = []
+				for (const debt of expense.debts) {
+					paybacks = [
+						...paybacks,
+						...(await calcultatePaybacks(
+							groupId,
+							debt.amount,
+							user?.email!,
+							debt.debtor.email,
+							debt.id
+						)),
+					]
+				}
 
 				await prisma.payback.createMany({ data: paybacks })
 				await repayDebts([
