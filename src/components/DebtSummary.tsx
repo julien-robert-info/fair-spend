@@ -1,8 +1,6 @@
 'use client'
 import React from 'react'
 import {
-	Backdrop,
-	CircularProgress,
 	Dialog,
 	DialogContent,
 	DialogTitle,
@@ -18,6 +16,7 @@ import UserAvatar from './UserAvatar'
 import TransferForm, { TransferFormProps } from '@/forms/TransferForm'
 import { getPanelData, PanelData } from '@/utils/debt'
 import { GroupDetails } from '@/actions/group'
+import Loader from './Loader'
 
 export const DebtSummary = ({ group }: { group: GroupDetails }) => {
 	const [data, setData] = React.useState<PanelData | undefined>()
@@ -38,16 +37,14 @@ export const DebtSummary = ({ group }: { group: GroupDetails }) => {
 
 	return (
 		<>
-			<Backdrop
+			<Loader
 				open={!data}
 				sx={{
 					position: 'absolute',
 					zIndex: (theme) => theme.zIndex.tooltip + 1,
 					bgcolor: 'rgba(255, 255, 255, 0.5)',
 				}}
-			>
-				<CircularProgress />
-			</Backdrop>
+			/>
 			{data && (
 				<>
 					<Typography>{`Solde : ${data.balance}€`}</Typography>

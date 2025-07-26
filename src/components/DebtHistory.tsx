@@ -5,9 +5,7 @@ import {
 	Accordion,
 	AccordionDetails,
 	AccordionSummary,
-	Backdrop,
 	Button,
-	CircularProgress,
 	Dialog,
 	DialogActions,
 	DialogContent,
@@ -26,12 +24,26 @@ import PriceCheckIcon from '@mui/icons-material/PriceCheck'
 import MoneyOffIcon from '@mui/icons-material/MoneyOff'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { GroupDetails } from '@/actions/group'
-import { HType, HistoryData, getHistoryData } from '@/utils/history'
+import {
+	HType,
+	HistoryData,
+	HistoryPeriod,
+	getHistoryData,
+} from '@/utils/history'
 import UserAvatar from './UserAvatar'
 import { deleteExpense } from '@/actions/expense'
 import { deleteTransfer } from '@/actions/transfer'
+import Loader from './Loader'
 
-export const DebtHistory = ({ group }: { group: GroupDetails }) => {
+type DebtHistoryProps = {
+	group: GroupDetails
+	historyPeriod: HistoryPeriod
+}
+
+export const DebtHistory: React.FC<DebtHistoryProps> = ({
+	group,
+	historyPeriod,
+}) => {
 	const [data, setData] = React.useState<HistoryData[] | undefined>()
 	const [openConfirm, setOpenConfirm] = React.useState(false)
 	const [confirmError, setConfirmError] = React.useState<string | undefined>()
@@ -42,14 +54,17 @@ export const DebtHistory = ({ group }: { group: GroupDetails }) => {
 		React.useState<() => Promise<void>>()
 
 	React.useEffect(() => {
-		const updatedata = async (groupId: number) => {
-			setData(await getHistoryData(groupId))
+		const updatedata = async (
+			groupId: number,
+			historyPeriod: HistoryPeriod
+		) => {
+			setData(await getHistoryData(groupId, historyPeriod))
 		}
 
 		if (group) {
-			updatedata(group.id)
+			updatedata(group.id, historyPeriod)
 		}
-	}, [group])
+	}, [group, historyPeriod])
 
 	const handleOpenConfirm = (hType: HType, itemId: number) => {
 		if (hType === 'transfer') {
@@ -85,16 +100,14 @@ export const DebtHistory = ({ group }: { group: GroupDetails }) => {
 
 	return (
 		<>
-			<Backdrop
+			<Loader
 				open={!data}
 				sx={{
 					position: 'absolute',
 					zIndex: (theme) => theme.zIndex.tooltip + 1,
 					bgcolor: 'rgba(255, 255, 255, 0.5)',
 				}}
-			>
-				<CircularProgress />
-			</Backdrop>
+			/>
 			{data?.map((item) => (
 				<Accordion key={`e${item.id}`}>
 					<AccordionSummary

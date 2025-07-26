@@ -10,17 +10,11 @@ import {
 	DialogContent,
 	DialogTitle,
 	IconButton,
-	Alert,
 } from '@mui/material'
 import AddCardRoundedIcon from '@mui/icons-material/AddCardRounded'
 import GroupCardContent from './GroupCardContent'
 import { GroupDetails } from '@/actions/group'
 import ExpenseForm from '@/forms/ExpenseForm'
-import { ShareMode } from '@prisma/client'
-import { getIncome } from '@/actions/member'
-import { dineroFormat } from '@/utils/dinero'
-import { dinero } from 'dinero.js'
-import { USD } from '@dinero.js/currencies'
 
 const GroupCard = ({
 	group,
@@ -31,21 +25,6 @@ const GroupCard = ({
 	onClick?: React.MouseEventHandler<HTMLButtonElement>
 } & Omit<CardProps, 'onClick'>) => {
 	const [openForm, setOpenForm] = React.useState(false)
-	const [income, setIncome] = React.useState('')
-
-	React.useEffect(() => {
-		const fetchIncome = async () => {
-			const fetchedIncome = await getIncome(group.id)
-			setIncome(
-				dineroFormat(
-					dinero({ amount: fetchedIncome ?? 0, currency: USD })
-				) ?? income
-			)
-		}
-
-		group.shareMode === ShareMode.EGALITARIAN && fetchIncome()
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [group])
 
 	return (
 		<>
@@ -74,11 +53,6 @@ const GroupCard = ({
 			<Dialog open={openForm} onClose={() => setOpenForm(false)}>
 				<DialogTitle>Saisir une dépense</DialogTitle>
 				<DialogContent>
-					{group.shareMode === ShareMode.EGALITARIAN && (
-						<Alert severity='info'>
-							Montant de vos revenus : {}
-						</Alert>
-					)}
 					<ExpenseForm
 						initialValues={{
 							groupId: group.id,

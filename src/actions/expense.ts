@@ -11,6 +11,7 @@ import { FormAction } from '@/components/Form'
 import * as Sentry from '@sentry/nextjs'
 import { parse } from 'date-fns'
 import { consumeTransfers } from './transfer'
+import { getDateFromPeriod, HistoryPeriod } from '@/utils/history'
 
 export type ExpenseDetail = Omit<Expense, 'payerId' | 'groupId'> & {
 	payer: {
@@ -30,9 +31,16 @@ export type ExpenseDetail = Omit<Expense, 'payerId' | 'groupId'> & {
 }
 
 export const getExpenses = async (
-	groupId: number
+	groupId: number,
+	period?: HistoryPeriod
 ): Promise<(ExpenseDetail & { owned: boolean })[]> => {
 	const user = await authOrError()
+
+	let dateFilter = new Date()
+
+	if (period && Number(period) !== HistoryPeriod.Tout) {
+		dateFilter = getDateFromPeriod(period)
+	}
 
 	const expenses = await prisma.expense.findMany({
 		select: {
@@ -52,7 +60,13 @@ export const getExpenses = async (
 				where: { debtor: { email: user?.email! } },
 			},
 		},
-		where: { groupId: groupId },
+		where: {
+			groupId: groupId,
+			...(period &&
+				Number(period) !== HistoryPeriod.Tout && {
+					date: { gte: dateFilter },
+				}),
+		},
 	})
 
 	return expenses.map((expense) => ({

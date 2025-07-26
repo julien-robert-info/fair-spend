@@ -11,6 +11,7 @@ import * as Sentry from '@sentry/nextjs'
 import { parse } from 'date-fns'
 import { getTransferNetAmount } from '@/utils/debt'
 import { Prisma } from '@prisma/client'
+import { getDateFromPeriod, HistoryPeriod } from '@/utils/history'
 
 export type TransferDetail = {
 	id: number
@@ -22,9 +23,16 @@ export type TransferDetail = {
 }
 
 export const getTransfers = async (
-	groupId: number
+	groupId: number,
+	period?: HistoryPeriod
 ): Promise<(TransferDetail & { owned: boolean })[]> => {
 	const user = await authOrError()
+
+	let dateFilter = new Date()
+
+	if (period && Number(period) !== HistoryPeriod.Tout) {
+		dateFilter = getDateFromPeriod(period)
+	}
 
 	const transfers = await prisma.transfer.findMany({
 		select: {
@@ -40,6 +48,10 @@ export const getTransfers = async (
 				{ sender: { email: user?.email! } },
 				{ receiver: { email: user?.email! } },
 			],
+			...(period &&
+				Number(period) !== HistoryPeriod.Tout && {
+					date: { gte: dateFilter },
+				}),
 		},
 	})
 

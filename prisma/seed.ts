@@ -1,8 +1,16 @@
 import { PrismaClient, ShareMode } from '@prisma/client'
-import { rand, randNumber, randQuote, randWord } from '@ngneat/falso'
-import { calculateDebts } from '@/actions/debt'
+import {
+	rand,
+	randNumber,
+	randPastDate,
+	randQuote,
+	randWord,
+} from '@ngneat/falso'
+import { calculateDebts, repayDebts } from '@/actions/debt'
 import { dinero } from 'dinero.js'
 import { USD } from '@dinero.js/currencies'
+import { PaybackDetails, calcultatePaybacks } from '@/actions/payback'
+import { consumeTransfers } from '@/actions/transfer'
 
 const prisma = new PrismaClient()
 
@@ -94,29 +102,70 @@ const createGroups = async () => {
 const createExpenses = async (groups: number[]) => {
 	const users = await getAllUsers()
 
-	for (let i = 0; i < groups.length; i++) {
-		const expenseCount = randNumber({ min: 3, max: 10 })
+	for (const group of groups) {
+		const expenseCount = randNumber({ min: 10, max: 30 })
 		for (let j = 0; j < expenseCount; j++) {
 			const amount = randNumber({ min: 100, max: 10000 })
 			const payer = rand(users)
-			await prisma.expense.create({
+			const expense = await prisma.expense.create({
 				data: {
 					amount,
 					description: randQuote(),
-					date: new Date(),
-					group: { connect: { id: groups[i] } },
+					date: randPastDate(),
+					group: { connect: { id: group } },
 					payer: { connect: { email: payer.email } },
 					debts: {
 						createMany: {
 							data: await calculateDebts(
-								groups[i],
+								group,
 								dinero({ amount: amount, currency: USD }),
 								payer.email
 							),
 						},
 					},
 				},
+				select: {
+					amount: true,
+					description: true,
+					date: true,
+					groupId: true,
+					payerId: true,
+					payer: { select: { name: true, image: true } },
+					debts: {
+						select: {
+							id: true,
+							amount: true,
+							isRepayed: true,
+							debtor: { select: { email: true } },
+						},
+					},
+				},
 			})
+
+			let paybacks: PaybackDetails[] = []
+			for (const debt of expense.debts) {
+				paybacks = [
+					...paybacks,
+					...(await calcultatePaybacks(
+						group,
+						debt.amount,
+						payer.email,
+						debt.debtor.email,
+						debt.id
+					)),
+				]
+			}
+
+			await prisma.payback.createMany({ data: paybacks })
+			await repayDebts([
+				...expense.debts.map((debt) => debt.id),
+				...paybacks.map((payback) => payback.debtId),
+			])
+			await consumeTransfers([
+				...paybacks
+					.filter((payback) => payback.transferId)
+					.map((payback) => payback.transferId!),
+			])
 		}
 	}
 }
