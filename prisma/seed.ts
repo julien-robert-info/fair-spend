@@ -3,7 +3,7 @@ import {
 	rand,
 	randNumber,
 	randPastDate,
-	randQuote,
+	randProductCategory,
 	randWord,
 } from '@ngneat/falso'
 import { calculateDebts, repayDebts } from '@/actions/debt'
@@ -110,7 +110,7 @@ const createExpenses = async (groups: number[]) => {
 			const expense = await prisma.expense.create({
 				data: {
 					amount,
-					description: randQuote(),
+					description: randProductCategory(),
 					date: randPastDate(),
 					group: { connect: { id: group } },
 					payer: { connect: { email: payer.email } },

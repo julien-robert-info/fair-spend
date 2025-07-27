@@ -274,9 +274,9 @@ test.describe('Debts features', () => {
 		const historyCloseButton = page.getByRole('button', {
 			name: 'history-close',
 		})
-		const expenseHistory = page
-			.getByRole('button')
-			.filter({ hasText: `${isMobile ? 'Alice' : 'Bob'} à dépensé` })
+		const expenseHistory = page.getByRole('button', {
+			name: `${isMobile ? 'Alice' : 'Bob'} test`,
+		})
 		const deleteExpenseButton = page.getByRole('button', {
 			name: 'delete_expense',
 		})
@@ -428,9 +428,9 @@ test.describe('Debts features', () => {
 		const historyCloseButton = page.getByRole('button', {
 			name: 'history-close',
 		})
-		const transferHistory = page.getByText(
-			`${isMobile ? 'Alice' : 'Bob'} à remboursé`
-		)
+		const transferHistory = page.getByRole('button', {
+			name: /[Alice|Bob] \d+\.\d+€ à [Alice|Bob]/,
+		})
 		const deleteTransferButton = page.getByRole('button', {
 			name: 'delete_transfer',
 		})
@@ -455,9 +455,9 @@ test.describe('Debts features', () => {
 				name: 'history-close',
 			}
 		)
-		const expenseHistory = secondUserPage
-			.getByRole('button')
-			.filter({ hasText: `${isMobile ? 'Bob' : 'Alice'} à dépensé` })
+		const expenseHistory = secondUserPage.getByRole('button', {
+			name: `${isMobile ? 'Bob' : 'Alice'} test`,
+		})
 		const deleteExpenseButton = secondUserPage.getByRole('button', {
 			name: 'delete_expense',
 		})

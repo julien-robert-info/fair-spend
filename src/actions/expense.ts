@@ -26,6 +26,21 @@ export type ExpenseDetail = Omit<Expense, 'payerId' | 'groupId'> & {
 				image?: string | null
 				email?: string | null
 			}
+			payingBack: {
+				amount: number
+				debt: {
+					isRepayed: boolean
+					expense: {
+						description: string
+						date: Date
+						payer: {
+							name?: string | null
+							image?: string | null
+							email?: string | null
+						}
+					}
+				}
+			}[]
 		}
 	>
 }
@@ -56,8 +71,36 @@ export const getExpenses = async (
 					debtor: {
 						select: { name: true, image: true },
 					},
+					payingBack: {
+						select: {
+							amount: true,
+							debt: {
+								select: {
+									isRepayed: true,
+									expense: {
+										select: {
+											description: true,
+											date: true,
+											payer: {
+												select: {
+													name: true,
+													image: true,
+													email: true,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
 				},
-				where: { debtor: { email: user?.email! } },
+				where: {
+					OR: [
+						{ debtor: { email: user?.email! } },
+						{ expense: { payer: { email: user?.email! } } },
+					],
+				},
 			},
 		},
 		where: {

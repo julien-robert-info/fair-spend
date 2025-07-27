@@ -17,12 +17,12 @@ export type PanelData = {
 }
 
 export const getDebtNetAmount = (
-	debt: Omit<DebtDetails, 'expense'>
+	debt: Omit<DebtDetails, 'expense' | 'debtor'>
 ): Dinero<number> => {
 	return subtract(
 		dinero({ amount: debt.amount, currency: USD }),
 		add(
-			debt.paybacks!.reduce(
+			debt.paybacks?.reduce(
 				(acc, { amount }) =>
 					add(
 						acc,
@@ -32,8 +32,8 @@ export const getDebtNetAmount = (
 						})
 					),
 				dinero({ amount: 0, currency: USD })
-			),
-			debt.payingBack!.reduce(
+			) ?? dinero({ amount: 0, currency: USD }),
+			debt.payingBack?.reduce(
 				(acc, { amount }) =>
 					add(
 						acc,
@@ -43,7 +43,7 @@ export const getDebtNetAmount = (
 						})
 					),
 				dinero({ amount: 0, currency: USD })
-			)
+			) ?? dinero({ amount: 0, currency: USD })
 		)
 	)
 }

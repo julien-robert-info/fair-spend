@@ -19,7 +19,7 @@ test.describe('Groups features', () => {
 		})
 	})
 
-	test('can create, update and delete a group', async ({
+	test('Can create, update and delete a group', async ({
 		page,
 		isMobile,
 	}) => {
@@ -68,7 +68,7 @@ test.describe('Groups features', () => {
 		await expect(card).toBeHidden()
 	})
 
-	test('can invite people in a group, transfert ownership and leave', async ({
+	test('Can invite people in a group, transfert ownership and leave', async ({
 		page,
 		browser,
 		isMobile,

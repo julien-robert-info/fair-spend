@@ -11,13 +11,13 @@ import {
 	DialogContent,
 	DialogContentText,
 	DialogTitle,
-	IconButton,
 	List,
 	ListItem,
 	ListItemAvatar,
 	ListItemText,
 	Stack,
 	Typography,
+	AccordionActions,
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import PriceCheckIcon from '@mui/icons-material/PriceCheck'
@@ -52,6 +52,13 @@ export const DebtHistory: React.FC<DebtHistoryProps> = ({
 	)
 	const [confirmAction, setConfirmAction] =
 		React.useState<() => Promise<void>>()
+	const [expanded, setExpanded] = React.useState<string | false>(false)
+
+	const handleChange =
+		(panel: string) =>
+		(event: React.SyntheticEvent, isExpanded: boolean) => {
+			setExpanded(isExpanded ? panel : false)
+		}
 
 	React.useEffect(() => {
 		const updatedata = async (
@@ -109,91 +116,216 @@ export const DebtHistory: React.FC<DebtHistoryProps> = ({
 				}}
 			/>
 			{data?.map((item) => (
-				<Accordion key={`e${item.id}`}>
+				<Accordion
+					key={`${item.hType.charAt(0)}${item.id}`}
+					expanded={expanded === `${item.hType.charAt(0)}${item.id}`}
+					onChange={handleChange(`${item.hType.charAt(0)}${item.id}`)}
+				>
 					<AccordionSummary
 						expandIcon={<ExpandMoreIcon />}
 						aria-controls={`panel${item.id}-content`}
 						id={`panel${item.id}-header`}
 					>
-						<Typography component='span'>
-							{item.hType === 'transfer'
-								? `${item.sender.name} à remboursé ${item.amount}€`
-								: `${item.payer.name} à dépensé ${item.amount}€`}
-						</Typography>
-						<Typography component='span' sx={{ ml: 2 }}>
-							({item.date.toLocaleDateString()})
-						</Typography>
+						<Stack
+							direction='row'
+							alignItems='center'
+							gap={1}
+							width='100%'
+						>
+							{item.hType === 'expense' ? (
+								<>
+									<UserAvatar user={item.payer} />
+									<Typography>{item.description}</Typography>
+									<Typography>{item.amount}€</Typography>
+								</>
+							) : (
+								<>
+									<UserAvatar user={item.sender} />
+									<Typography>{item.amount}€ à</Typography>
+									<UserAvatar user={item.receiver} />
+								</>
+							)}
+							<Typography sx={{ flexGrow: 1, textAlign: 'end' }}>
+								({item.date.toLocaleDateString()})
+							</Typography>
+						</Stack>
 					</AccordionSummary>
 					<AccordionDetails>
-						<Stack direction='row' alignItems='center'>
-							{item.hType === 'expense' ? (
-								<Typography sx={{ flexGrow: 1 }}>
-									description: {item.description}
-								</Typography>
-							) : (
-								<Stack
-									direction='row'
-									alignItems='center'
-									gap={2}
-									sx={{
-										flexGrow: 1,
-										bgcolor: 'success.light',
-										py: 1,
-										px: 2,
-									}}
-								>
-									<UserAvatar user={item.receiver} />
-									<Typography>{`${item.amount}€`}</Typography>
-								</Stack>
-							)}
-							{item.owned && (
-								<IconButton
-									aria-label={`delete_${item.hType}`}
-									onClick={() =>
-										handleOpenConfirm(item.hType, item.id)
-									}
-								>
-									<DeleteIcon />
-								</IconButton>
-							)}
-						</Stack>
-						{item.hType === 'expense' && item.debts.length > 0 && (
-							<List>
-								{item.debts.map((debt) => (
-									<ListItem
-										key={`e${item.id}d${debt.debtor.name}`}
-										secondaryAction={
-											debt.isRepayed ? (
-												<PriceCheckIcon
-													sx={{
-														color: 'text.secondary',
-													}}
-												/>
-											) : (
-												<MoneyOffIcon
-													sx={{
-														color: 'text.secondary',
-													}}
-												/>
-											)
-										}
-										sx={{
-											bgcolor: debt.isRepayed
-												? 'success.light'
-												: 'error.light',
-										}}
-									>
-										<ListItemAvatar>
-											<UserAvatar user={debt.debtor} />
-										</ListItemAvatar>
-										<ListItemText
-											primary={`${debt.amount}€`}
-										/>
-									</ListItem>
-								))}
-							</List>
+						{item.hType === 'transfer' ? (
+							<>
+								<Typography>Rembourse :</Typography>
+								<List>
+									{item.paybacks.map((payback, i) => (
+										<ListItem
+											key={`${item.hType.charAt(0)}${
+												item.id
+											}p${i}`}
+											secondaryAction={
+												payback.debt.isRepayed ? (
+													<PriceCheckIcon
+														sx={{
+															color: 'text.secondary',
+														}}
+													/>
+												) : (
+													<MoneyOffIcon
+														sx={{
+															color: 'text.secondary',
+														}}
+													/>
+												)
+											}
+											sx={{
+												bgcolor: payback.debt.isRepayed
+													? 'success.light'
+													: 'error.light',
+											}}
+										>
+											<ListItemText
+												primary={`${
+													payback.debt.expense
+														.description
+												} (${payback.debt.expense.date.toLocaleDateString()}) ${
+													payback.amount
+												}€`}
+											/>
+										</ListItem>
+									))}
+								</List>
+							</>
+						) : (
+							<>
+								{item.debts.filter(
+									(debt) => debt.amount !== '0.00'
+								).length > 0 && (
+									<>
+										<Typography>Dettes :</Typography>
+										<List>
+											{item.debts
+												.filter(
+													(debt) =>
+														debt.amount !== '0.00'
+												)
+												.map((debt, i) => (
+													<ListItem
+														key={`e${item.id}d${i}`}
+														secondaryAction={
+															debt.isRepayed ? (
+																<PriceCheckIcon
+																	sx={{
+																		color: 'text.secondary',
+																	}}
+																/>
+															) : (
+																<MoneyOffIcon
+																	sx={{
+																		color: 'text.secondary',
+																	}}
+																/>
+															)
+														}
+														sx={{
+															bgcolor:
+																debt.isRepayed
+																	? 'success.light'
+																	: 'error.light',
+														}}
+													>
+														<ListItemAvatar>
+															<UserAvatar
+																user={
+																	debt.debtor
+																}
+															/>
+														</ListItemAvatar>
+														<ListItemText
+															primary={`${debt.amount}€`}
+														/>
+													</ListItem>
+												))}
+										</List>
+									</>
+								)}
+								{item.debts.flatMap((debt) => debt.payinback)
+									.length > 0 && (
+									<>
+										<Typography>Rembourse :</Typography>
+										<List>
+											{item.debts
+												.flatMap(
+													(debt) => debt.payinback
+												)
+												.map((payinback, i) => (
+													<ListItem
+														key={`e${item.id}p${i}`}
+														secondaryAction={
+															payinback.debt
+																.isRepayed ? (
+																<PriceCheckIcon
+																	sx={{
+																		color: 'text.secondary',
+																	}}
+																/>
+															) : (
+																<MoneyOffIcon
+																	sx={{
+																		color: 'text.secondary',
+																	}}
+																/>
+															)
+														}
+														sx={{
+															bgcolor: payinback
+																.debt.isRepayed
+																? 'success.light'
+																: 'error.light',
+														}}
+													>
+														<ListItemAvatar>
+															<UserAvatar
+																user={
+																	payinback
+																		.debt
+																		.expense
+																		.payer
+																}
+															/>
+														</ListItemAvatar>
+														<ListItemText
+															primary={`${
+																payinback.debt
+																	.expense
+																	.description
+															} (${payinback.debt.expense.date.toLocaleDateString()}) ${
+																payinback.amount
+															}€`}
+														/>
+													</ListItem>
+												))}
+										</List>
+									</>
+								)}
+							</>
 						)}
 					</AccordionDetails>
+					{item.owned && (
+						<AccordionActions>
+							<Button
+								aria-label={`delete_${item.hType}`}
+								onClick={() =>
+									handleOpenConfirm(item.hType, item.id)
+								}
+								startIcon={<DeleteIcon />}
+								sx={{
+									color: 'text.secondary',
+									fontSize: 16,
+									fontWeight: 400,
+								}}
+							>
+								Supprimer
+							</Button>
+						</AccordionActions>
+					)}
 				</Accordion>
 			))}
 			<Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>

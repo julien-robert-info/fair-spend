@@ -25,7 +25,18 @@ export type TransferDetail = {
 export const getTransfers = async (
 	groupId: number,
 	period?: HistoryPeriod
-): Promise<(TransferDetail & { owned: boolean })[]> => {
+): Promise<
+	(Omit<TransferDetail, 'paybacks'> & {
+		owned: boolean
+		paybacks: {
+			amount: number
+			debt: {
+				isRepayed: boolean
+				expense: { description: string; date: Date }
+			}
+		}[]
+	})[]
+> => {
 	const user = await authOrError()
 
 	let dateFilter = new Date()
@@ -41,6 +52,19 @@ export const getTransfers = async (
 			date: true,
 			sender: { select: { name: true, image: true, email: true } },
 			receiver: { select: { name: true, image: true } },
+			paybacks: {
+				select: {
+					amount: true,
+					debt: {
+						select: {
+							isRepayed: true,
+							expense: {
+								select: { description: true, date: true },
+							},
+						},
+					},
+				},
+			},
 		},
 		where: {
 			groupId: groupId,

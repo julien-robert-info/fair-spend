@@ -5,6 +5,7 @@ import { USD } from '@dinero.js/currencies'
 import { dineroFormat } from '@/utils/dinero'
 import { Debt } from '@prisma/client'
 import { sub } from 'date-fns'
+import { getDebtNetAmount } from './debt'
 
 export type HType = 'expense' | 'transfer'
 
@@ -20,14 +21,36 @@ type expenseHistory = Omit<ExpenseDetail, 'amount' | 'debts'> & {
 				image?: string | null
 				email?: string | null
 			}
+			payinback: {
+				amount: string
+				debt: {
+					isRepayed: boolean
+					expense: {
+						description: string
+						date: Date
+						payer: {
+							name?: string | null
+							image?: string | null
+							email?: string | null
+						}
+					}
+				}
+			}[]
 		}
 	>
 }
 
-type transferHistory = Omit<TransferDetail, 'amount'> & {
+type transferHistory = Omit<TransferDetail, 'amount' | 'paybacks'> & {
 	hType: 'transfer'
 	amount: string
 	owned: boolean
+	paybacks: {
+		amount: string
+		debt: {
+			isRepayed: boolean
+			expense: { description: string; date: Date }
+		}
+	}[]
 }
 
 export type HistoryData = expenseHistory | transferHistory
@@ -52,9 +75,14 @@ export const getHistoryData = async (
 			),
 			debts: expense.debts.map((debt) => ({
 				...debt,
-				amount: dineroFormat(
-					dinero({ amount: debt.amount, currency: USD })
-				),
+				amount: dineroFormat(getDebtNetAmount(debt)),
+				payinback:
+					debt.payingBack?.map((payinback) => ({
+						...payinback,
+						amount: dineroFormat(
+							dinero({ amount: payinback.amount, currency: USD })
+						),
+					})) ?? [],
 			})),
 		})
 	)
@@ -66,6 +94,12 @@ export const getHistoryData = async (
 		amount: dineroFormat(
 			dinero({ amount: transfer.amount, currency: USD })
 		),
+		paybacks: transfer.paybacks.map((payback) => ({
+			...payback,
+			amount: dineroFormat(
+				dinero({ amount: payback.amount, currency: USD })
+			),
+		})),
 	}))
 
 	const history = [...expenses, ...transfer].sort((a, b) => {
