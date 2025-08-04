@@ -5,6 +5,7 @@ import prisma from '@/utils/prisma'
 import { ShareMode } from '@prisma/client'
 import { allocate, Dinero, isNegative, isZero, toSnapshot } from 'dinero.js'
 import { getDebtNetAmount } from '@/utils/debt'
+import { id } from 'date-fns/locale'
 
 export type DebtDetails = {
 	amount: number
@@ -72,24 +73,22 @@ export const calculateDebts = async (
 	amount: Dinero<number>,
 	payerEmail: string
 ): Promise<{ amount: number; debtorId: string }[]> => {
-	const debtors = shuffleArray(
-		await prisma.member.findMany({
-			select: {
-				user: { select: { id: true, email: true } },
-				income: true,
-			},
-			where: { groupId: groupId },
-		})
-	)
-
-	//handle shareMode
 	const group = await prisma.group.findUniqueOrThrow({
 		select: {
 			shareMode: true,
+			members: {
+				select: {
+					user: { select: { id: true, email: true } },
+					income: true,
+				},
+			},
 		},
 		where: { id: groupId },
 	})
 
+	const debtors = shuffleArray(group.members)
+
+	//handle shareMode
 	let shares: number[] = []
 	if (group.shareMode === ShareMode.FAIR) {
 		const incomeArray = debtors.map((debtors) => debtors.income)
@@ -116,27 +115,26 @@ export const calculateDebts = async (
 }
 
 export const repayDebts = async (debtIds: number[]) => {
-	for (const debtId of debtIds) {
-		const debt = await prisma.debt.findFirst({
-			select: {
-				amount: true,
-				isRepayed: true,
-				paybacks: { select: { amount: true } },
-				payingBack: { select: { amount: true } },
-			},
-			where: { id: debtId },
-		})
+	const debts = await prisma.debt.findMany({
+		select: {
+			id: true,
+			amount: true,
+			isRepayed: true,
+			paybacks: { select: { amount: true } },
+			payingBack: { select: { amount: true } },
+		},
+		where: { id: { in: debtIds } },
+	})
 
-		if (debt) {
-			const netAmount = getDebtNetAmount(debt)
-			const isRepayed = isNegative(netAmount) || isZero(netAmount)
+	for (const debt of debts) {
+		const netAmount = getDebtNetAmount(debt)
+		const isRepayed = isNegative(netAmount) || isZero(netAmount)
 
-			if (isRepayed !== debt.isRepayed) {
-				await prisma.debt.update({
-					data: { isRepayed: isRepayed },
-					where: { id: debtId },
-				})
-			}
+		if (isRepayed !== debt.isRepayed) {
+			await prisma.debt.update({
+				data: { isRepayed: isRepayed },
+				where: { id: debt.id },
+			})
 		}
 	}
 }

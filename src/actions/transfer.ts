@@ -210,32 +210,28 @@ export const createTransfer: FormAction = async (prevState, formData) => {
 }
 
 export const consumeTransfers = async (transferIds: number[]) => {
-	try {
-		const transfers = await prisma.transfer.findMany({
-			select: {
-				id: true,
-				amount: true,
-				isConsumed: true,
-				paybacks: {
-					select: { amount: true },
-				},
+	const transfers = await prisma.transfer.findMany({
+		select: {
+			id: true,
+			amount: true,
+			isConsumed: true,
+			paybacks: {
+				select: { amount: true },
 			},
-			where: { id: { in: transferIds } },
-		})
+		},
+		where: { id: { in: transferIds } },
+	})
 
-		for (const transfer of transfers) {
-			const netAmount = getTransferNetAmount(transfer)
-			const isConsumed = isNegative(netAmount) || isZero(netAmount)
+	for (const transfer of transfers) {
+		const netAmount = getTransferNetAmount(transfer)
+		const isConsumed = isNegative(netAmount) || isZero(netAmount)
 
-			if (isConsumed !== transfer.isConsumed) {
-				await prisma.transfer.update({
-					data: { isConsumed: isConsumed },
-					where: { id: transfer.id },
-				})
-			}
+		if (isConsumed !== transfer.isConsumed) {
+			await prisma.transfer.update({
+				data: { isConsumed: isConsumed },
+				where: { id: transfer.id },
+			})
 		}
-	} catch (error) {
-		return { message: error as string }
 	}
 }
 

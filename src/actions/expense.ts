@@ -148,6 +148,12 @@ export const createExpense: FormAction = async (prevState, formData) => {
 
 			let expense
 			try {
+				const debts = await calculateDebts(
+					groupId,
+					amount,
+					user?.email!
+				)
+
 				expense = await prisma.expense.create({
 					data: {
 						date,
@@ -157,11 +163,7 @@ export const createExpense: FormAction = async (prevState, formData) => {
 						payer: { connect: { email: user?.email! } },
 						debts: {
 							createMany: {
-								data: await calculateDebts(
-									groupId,
-									amount,
-									user?.email!
-								),
+								data: debts,
 							},
 						},
 					},
