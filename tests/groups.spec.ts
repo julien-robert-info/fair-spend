@@ -68,7 +68,7 @@ test.describe('Groups features', () => {
 		await expect(card).toBeHidden()
 	})
 
-	test('Can invite people in a group, transfert ownership and leave', async ({
+	test('Can invite people in a group, transfert ownership, leave and come back', async ({
 		page,
 		browser,
 		isMobile,
@@ -194,7 +194,29 @@ test.describe('Groups features', () => {
 		await expect(
 			secondUserPage.getByRole('menuitem', { name: 'Supprimer' })
 		).toBeVisible()
+
+		// reinvite
+		await secondUserPage.getByRole('menuitem', { name: 'Inviter' }).click()
+
+		await expect(secondUserPage.getByLabel('Email')).toBeVisible()
+
+		await secondUserPage
+			.getByLabel('Email')
+			.fill(isMobile ? 'alice@test.com' : 'bob@test.com')
+		await secondUserPage.getByRole('button', { name: 'Inviter' }).click()
 		await secondUserContext.close()
+
+		await page.reload()
+		await expect(page.getByRole('button', { name: 'accept' })).toBeVisible()
+
+		await page.getByRole('button', { name: 'accept' }).click()
+
+		if (isMobile) {
+			await swipeToLocator(page, card)
+		} else {
+			await card.click()
+		}
+		await expect(card).toBeVisible()
 	})
 
 	test('Can set Income on Fair group', async ({ page, isMobile }) => {

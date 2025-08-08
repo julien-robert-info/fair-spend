@@ -58,6 +58,7 @@ export const createInvite: FormAction = async (prevState, formData) => {
 						user: {
 							select: { email: true },
 						},
+						enabled: true,
 					},
 				},
 			},
@@ -75,8 +76,10 @@ export const createInvite: FormAction = async (prevState, formData) => {
 		}
 
 		const emailIsMember =
-			group.members.findIndex((member) => member.user.email === email) !==
-			-1
+			group.members.findIndex(
+				(member) =>
+					member.user.email === email && member.enabled === true
+			) !== -1
 		if (emailIsMember) {
 			return { message: 'Cette personne est déjà membre du group' }
 		}

@@ -28,7 +28,7 @@ const GroupCardContent = ({
 					open={true}
 					sx={{
 						position: 'absolute',
-						zIndex: (theme) => theme.zIndex.tooltip + 1,
+						zIndex: (theme) => theme.zIndex.mobileStepper + 1,
 						bgcolor: 'rgba(255, 255, 255, 0.5)',
 						alignItems: 'end',
 					}}

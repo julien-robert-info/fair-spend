@@ -13,18 +13,22 @@ import { parse } from 'date-fns'
 import { consumeTransfers } from './transfer'
 import { getDateFromPeriod, HistoryPeriod } from '@/utils/history'
 
-export type ExpenseDetail = Omit<Expense, 'payerId' | 'groupId'> & {
+export type ExpenseDetail = Omit<Expense, 'groupId' | 'payerEmail'> & {
 	payer: {
-		name?: string | null
-		image?: string | null
-		email?: string | null
+		user: {
+			name?: string | null
+			image?: string | null
+			email?: string | null
+		}
 	}
 	debts: Array<
-		Omit<Debt, 'id' | 'expenseId' | 'debtorId'> & {
+		Omit<Debt, 'id' | 'expenseId' | 'debtorEmail' | 'groupId'> & {
 			debtor: {
-				name?: string | null
-				image?: string | null
-				email?: string | null
+				user: {
+					name?: string | null
+					image?: string | null
+					email?: string | null
+				}
 			}
 			payingBack: {
 				amount: number
@@ -34,9 +38,11 @@ export type ExpenseDetail = Omit<Expense, 'payerId' | 'groupId'> & {
 						description: string
 						date: Date
 						payer: {
-							name?: string | null
-							image?: string | null
-							email?: string | null
+							user: {
+								name?: string | null
+								image?: string | null
+								email?: string | null
+							}
 						}
 					}
 				}
@@ -63,13 +69,19 @@ export const getExpenses = async (
 			amount: true,
 			date: true,
 			description: true,
-			payer: { select: { name: true, image: true, email: true } },
+			payer: {
+				select: {
+					user: { select: { name: true, image: true, email: true } },
+				},
+			},
 			debts: {
 				select: {
 					amount: true,
 					isRepayed: true,
 					debtor: {
-						select: { name: true, image: true },
+						select: {
+							user: { select: { name: true, image: true } },
+						},
 					},
 					payingBack: {
 						select: {
@@ -83,9 +95,13 @@ export const getExpenses = async (
 											date: true,
 											payer: {
 												select: {
-													name: true,
-													image: true,
-													email: true,
+													user: {
+														select: {
+															name: true,
+															image: true,
+															email: true,
+														},
+													},
 												},
 											},
 										},
@@ -97,8 +113,12 @@ export const getExpenses = async (
 				},
 				where: {
 					OR: [
-						{ debtor: { email: user?.email! } },
-						{ expense: { payer: { email: user?.email! } } },
+						{ debtor: { user: { email: user?.email! } } },
+						{
+							expense: {
+								payer: { user: { email: user?.email! } },
+							},
+						},
 					],
 				},
 			},
@@ -114,7 +134,7 @@ export const getExpenses = async (
 
 	return expenses.map((expense) => ({
 		...expense,
-		owned: expense.payer.email === user?.email,
+		owned: expense.payer.user.email === user?.email,
 	}))
 }
 
@@ -159,8 +179,14 @@ export const createExpense: FormAction = async (prevState, formData) => {
 						date,
 						description,
 						amount: toSnapshot(amount).amount,
-						group: { connect: { id: groupId } },
-						payer: { connect: { email: user?.email! } },
+						payer: {
+							connect: {
+								groupId_userEmail: {
+									groupId: groupId,
+									userEmail: user?.email!,
+								},
+							},
+						},
 						debts: {
 							createMany: {
 								data: debts,
@@ -172,14 +198,22 @@ export const createExpense: FormAction = async (prevState, formData) => {
 						description: true,
 						date: true,
 						groupId: true,
-						payerId: true,
-						payer: { select: { name: true, image: true } },
+						payerEmail: true,
+						payer: {
+							select: {
+								user: { select: { name: true, image: true } },
+							},
+						},
 						debts: {
 							select: {
 								id: true,
 								amount: true,
 								isRepayed: true,
-								debtor: { select: { email: true } },
+								debtor: {
+									select: {
+										user: { select: { email: true } },
+									},
+								},
 							},
 						},
 					},
@@ -193,7 +227,7 @@ export const createExpense: FormAction = async (prevState, formData) => {
 							groupId,
 							debt.amount,
 							user?.email!,
-							debt.debtor.email,
+							debt.debtor.user.email,
 							debt.id
 						)),
 					]
@@ -236,7 +270,7 @@ export const deleteExpense = async (expenseId: number) => {
 		})
 
 		await prisma.expense.delete({
-			where: { id: expenseId, payer: { email: user?.email! } },
+			where: { id: expenseId, payer: { user: { email: user?.email! } } },
 		})
 
 		await repayDebts(debts.map((debt) => debt.id))

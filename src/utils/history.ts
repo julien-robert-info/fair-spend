@@ -14,12 +14,17 @@ type expenseHistory = Omit<ExpenseDetail, 'amount' | 'debts'> & {
 	amount: string
 	owned: boolean
 	debts: Array<
-		Omit<Debt, 'id' | 'amount' | 'expenseId' | 'debtorId'> & {
+		Omit<
+			Debt,
+			'id' | 'amount' | 'expenseId' | 'debtorEmail' | 'groupId'
+		> & {
 			amount: string
 			debtor: {
-				name?: string | null
-				image?: string | null
-				email?: string | null
+				user: {
+					name?: string | null
+					image?: string | null
+					email?: string | null
+				}
 			}
 			payinback: {
 				amount: string
@@ -29,9 +34,11 @@ type expenseHistory = Omit<ExpenseDetail, 'amount' | 'debts'> & {
 						description: string
 						date: Date
 						payer: {
-							name?: string | null
-							image?: string | null
-							email?: string | null
+							user: {
+								name?: string | null
+								image?: string | null
+								email?: string | null
+							}
 						}
 					}
 				}

@@ -17,8 +17,14 @@ export type TransferDetail = {
 	id: number
 	amount: number
 	date: Date
-	sender: { name: string | null; image: string | null; email?: string | null }
-	receiver: { name: string | null; image: string | null }
+	sender: {
+		user: {
+			name: string | null
+			image: string | null
+			email?: string | null
+		}
+	}
+	receiver: { user: { name: string | null; image: string | null } }
 	paybacks?: PaybackDetails[]
 }
 
@@ -50,8 +56,16 @@ export const getTransfers = async (
 			id: true,
 			amount: true,
 			date: true,
-			sender: { select: { name: true, image: true, email: true } },
-			receiver: { select: { name: true, image: true } },
+			sender: {
+				select: {
+					user: { select: { name: true, image: true, email: true } },
+				},
+			},
+			receiver: {
+				select: {
+					user: { select: { name: true, image: true } },
+				},
+			},
 			paybacks: {
 				select: {
 					amount: true,
@@ -69,8 +83,8 @@ export const getTransfers = async (
 		where: {
 			groupId: groupId,
 			OR: [
-				{ sender: { email: user?.email! } },
-				{ receiver: { email: user?.email! } },
+				{ sender: { user: { email: user?.email! } } },
+				{ receiver: { user: { email: user?.email! } } },
 			],
 			...(period &&
 				Number(period) !== HistoryPeriod.Tout && {
@@ -81,7 +95,7 @@ export const getTransfers = async (
 
 	return transfers.map((transfer) => ({
 		...transfer,
-		owned: transfer.sender.email === user?.email,
+		owned: transfer.sender.user.email === user?.email,
 	}))
 }
 
@@ -100,12 +114,16 @@ export const getReceivedTransfers = async (
 		select: {
 			id: true,
 			amount: true,
-			sender: { select: { name: true, image: true, email: true } },
+			sender: {
+				select: {
+					user: { select: { name: true, image: true, email: true } },
+				},
+			},
 			paybacks: { select: { amount: true } },
 		},
 		where: {
 			groupId: groupId,
-			receiver: { email: user?.email! },
+			receiver: { user: { email: user?.email! } },
 			isConsumed: false,
 		},
 	})
@@ -118,7 +136,7 @@ export const getsendedTransfers = async (
 ): Promise<
 	{
 		amount: number
-		receiver: { name: string | null }
+		receiver: { user: { name: string | null } }
 		paybacks: {
 			amount: number
 		}[]
@@ -129,12 +147,16 @@ export const getsendedTransfers = async (
 	const transfers = await prisma.transfer.findMany({
 		select: {
 			amount: true,
-			receiver: { select: { name: true, image: true, email: true } },
+			receiver: {
+				select: {
+					user: { select: { name: true, image: true, email: true } },
+				},
+			},
 			paybacks: { select: { amount: true } },
 		},
 		where: {
 			groupId: groupId,
-			sender: { email: user?.email! },
+			sender: { user: { email: user?.email! } },
 			isConsumed: false,
 		},
 	})
@@ -186,9 +208,22 @@ export const createTransfer: FormAction = async (prevState, formData) => {
 					data: {
 						amount,
 						date,
-						group: { connect: { id: groupId } },
-						sender: { connect: { email: user?.email! } },
-						receiver: { connect: { email: receiver } },
+						sender: {
+							connect: {
+								groupId_userEmail: {
+									groupId: groupId,
+									userEmail: user?.email!,
+								},
+							},
+						},
+						receiver: {
+							connect: {
+								groupId_userEmail: {
+									groupId: groupId,
+									userEmail: receiver,
+								},
+							},
+						},
 						paybacks: {
 							createMany: {
 								data: paybacks,
@@ -246,7 +281,7 @@ export const deleteTransfer = async (transferId: number) => {
 		})
 
 		await prisma.transfer.delete({
-			where: { id: transferId, sender: { email: user?.email! } },
+			where: { id: transferId, sender: { userEmail: user?.email! } },
 		})
 
 		await repayDebts(debts.map((debt) => debt.id))

@@ -111,23 +111,23 @@ export const getPanelData = async (groupId: number): Promise<PanelData> => {
 
 	const debtList = [
 		...new Set([
-			...debts.map((debt) => debt.expense.payer?.name!),
-			...ownedDebts.map((debt) => debt.debtor?.name!),
-			...sendedTransfers.map((transfer) => transfer.receiver.name!),
-			...receivedTransfers.map((transfer) => transfer.sender.name!),
+			...debts.map((debt) => debt.expense.payer?.user.name!),
+			...ownedDebts.map((debt) => debt.debtor?.user.name!),
+			...sendedTransfers.map((transfer) => transfer.receiver.user.name!),
+			...receivedTransfers.map((transfer) => transfer.sender.user.name!),
 		]),
 	].map((name) => {
 		const balance = add(
 			subtract(
 				sendedTransfers
-					.filter((transfer) => transfer.receiver.name === name)
+					.filter((transfer) => transfer.receiver.user.name === name)
 					.map((transfer) => getTransferNetAmount(transfer))
 					.reduce(
 						(acc, amount) => add(acc, amount),
 						dinero({ amount: 0, currency: USD })
 					),
 				receivedTransfers
-					.filter((transfer) => transfer.sender.name === name)
+					.filter((transfer) => transfer.sender.user.name === name)
 					.map((transfer) => getTransferNetAmount(transfer))
 					.reduce(
 						(acc, amount) => add(acc, amount),
@@ -136,14 +136,14 @@ export const getPanelData = async (groupId: number): Promise<PanelData> => {
 			),
 			subtract(
 				ownedDebts
-					.filter((debt) => debt.debtor?.name === name)
+					.filter((debt) => debt.debtor?.user.name === name)
 					.map((ownedDebt) => getDebtNetAmount(ownedDebt))
 					.reduce(
 						(acc, amount) => add(acc, amount),
 						dinero({ amount: 0, currency: USD })
 					),
 				debts
-					.filter((debt) => debt.expense.payer?.name === name)
+					.filter((debt) => debt.expense.payer?.user.name === name)
 					.map((debt) => getDebtNetAmount(debt))
 					.reduce(
 						(acc, amount) => add(acc, amount),
@@ -154,15 +154,16 @@ export const getPanelData = async (groupId: number): Promise<PanelData> => {
 
 		return {
 			user:
-				debts.find((debt) => debt.expense.payer?.name === name)?.expense
-					.payer ??
-				ownedDebts.find((debt) => debt.debtor?.name === name)?.debtor ??
+				debts.find((debt) => debt.expense.payer?.user.name === name)
+					?.expense.payer?.user ??
+				ownedDebts.find((debt) => debt.debtor?.user.name === name)
+					?.debtor?.user ??
 				sendedTransfers.find(
-					(transfer) => transfer.receiver.name === name
-				)?.receiver ??
+					(transfer) => transfer.receiver.user.name === name
+				)?.receiver.user ??
 				receivedTransfers.find(
-					(transfer) => transfer.sender.name === name
-				)?.sender,
+					(transfer) => transfer.sender.user.name === name
+				)?.sender.user,
 			amount: dineroFormat(balance, true),
 			isNegative: isNegative(balance),
 		}

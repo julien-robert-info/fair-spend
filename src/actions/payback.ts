@@ -34,8 +34,8 @@ export const calcultatePaybacks = async (
 			paybacks: { select: { amount: true } },
 		},
 		where: {
-			sender: { email: receiver },
-			receiver: { email: sender },
+			sender: { user: { email: receiver } },
+			receiver: { user: { email: sender } },
 			isConsumed: false,
 		},
 	})
@@ -48,8 +48,8 @@ export const calcultatePaybacks = async (
 			payingBack: { select: { amount: true } },
 		},
 		where: {
-			expense: { groupId: groupId, payer: { email: receiver } },
-			debtor: { email: sender },
+			expense: { groupId: groupId, payer: { user: { email: receiver } } },
+			debtor: { user: { email: sender } },
 			isRepayed: false,
 		},
 	})

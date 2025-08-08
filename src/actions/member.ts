@@ -19,23 +19,35 @@ export const joinGroup = async (id: number) => {
 						user: {
 							select: { email: true },
 						},
+						enabled: true,
 					},
 				},
 			},
 			where: { id: id },
 		})
 
-		const IsMember =
-			group.members.findIndex(
-				(member) => member.user.email === user?.email
-			) !== -1
-		if (IsMember) {
-			return { message: 'Vous êtes déjà membre du group' }
+		const member = group.members.find(
+			(member) => member.user.email === user?.email
+		)
+		if (member) {
+			if (member.enabled) {
+				return { message: 'Vous êtes déjà membre du group' }
+			} else {
+				await prisma.member.update({
+					data: { enabled: true },
+					where: {
+						groupId_userEmail: {
+							groupId: id,
+							userEmail: user?.email!,
+						},
+					},
+				})
+			}
+		} else {
+			await prisma.member.create({
+				data: { groupId: id, userEmail: user?.email! },
+			})
 		}
-
-		await prisma.member.create({
-			data: { groupId: id, userEmail: user?.email! },
-		})
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError) {
 			if (error.code === 'P2025') {
@@ -74,7 +86,8 @@ export const leaveGroup = async (id: number) => {
 			return { message: "Vous n'êtes pas membre du group" }
 		}
 
-		await prisma.member.delete({
+		await prisma.member.update({
+			data: { enabled: false },
 			where: {
 				groupId_userEmail: { groupId: id, userEmail: user?.email! },
 			},

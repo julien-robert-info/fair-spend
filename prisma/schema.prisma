@@ -24,12 +24,8 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
-  groups           Group[]
-  membership       Member[]
-  expenses         Expense[]
-  debts            Debt[]
-  transferSended   Transfer[] @relation(name: "sender")
-  transferReceived Transfer[] @relation(name: "receiver")
+  groups     Group[]
+  membership Member[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -98,10 +94,8 @@ model Group {
   owner   User   @relation(fields: [ownerId], references: [id])
   ownerId String
 
-  members  Member[]
-  invites  Invite[]
-  expenses Expense[]
-  Transfer Transfer[]
+  members Member[]
+  invites Invite[]
 
   @@unique([name, ownerId])
 }
@@ -113,7 +107,13 @@ model Member {
   user      User   @relation(fields: [userEmail], references: [email])
   userEmail String
 
-  income Int?
+  income  Int?
+  enabled Boolean @default(true)
+
+  expenses         Expense[]
+  debts            Debt[]
+  transferSended   Transfer[] @relation(name: "transferSender")
+  transferReceived Transfer[] @relation(name: "transferReceiver")
 
   @@unique([groupId, userEmail])
 }
@@ -133,11 +133,9 @@ model Expense {
   description String
   date        DateTime @default(now())
 
-  payerId String
-  payer   User   @relation(fields: [payerId], references: [id])
-
-  groupId Int
-  group   Group @relation(fields: [groupId], references: [id])
+  groupId    Int
+  payerEmail String
+  payer      Member @relation(fields: [groupId, payerEmail], references: [groupId, userEmail])
 
   debts Debt[]
 }
@@ -150,8 +148,9 @@ model Debt {
   expenseId Int
   expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
 
-  debtorId String
-  debtor   User   @relation(fields: [debtorId], references: [id])
+  groupId     Int
+  debtorEmail String
+  debtor      Member @relation(fields: [groupId, debtorEmail], references: [groupId, userEmail])
 
   paybacks   Payback[] @relation(name: "debt")
   payingBack Payback[] @relation(name: "counterDebt")
@@ -177,14 +176,13 @@ model Transfer {
   date       DateTime @default(now())
   isConsumed Boolean
 
-  senderId String
-  sender   User   @relation(name: "sender", fields: [senderId], references: [id])
-
-  receiverId String
-  receiver   User   @relation(name: "receiver", fields: [receiverId], references: [id])
-
   groupId Int
-  group   Group @relation(fields: [groupId], references: [id])
+
+  senderEmail String
+  sender      Member @relation(name: "transferSender", fields: [groupId, senderEmail], references: [groupId, userEmail])
+
+  receiverEmail String
+  receiver      Member @relation(name: "transferReceiver", fields: [groupId, receiverEmail], references: [groupId, userEmail])
 
   paybacks Payback[]
 }

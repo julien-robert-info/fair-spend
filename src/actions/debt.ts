@@ -5,16 +5,15 @@ import prisma from '@/utils/prisma'
 import { ShareMode } from '@prisma/client'
 import { allocate, Dinero, isNegative, isZero, toSnapshot } from 'dinero.js'
 import { getDebtNetAmount } from '@/utils/debt'
-import { id } from 'date-fns/locale'
 
 export type DebtDetails = {
 	amount: number
 	expense: {
 		date: Date
 		description: string
-		payer?: { name: string | null; image: string | null }
+		payer?: { user: { name: string | null; image: string | null } }
 	}
-	debtor?: { name: string | null; image: string | null }
+	debtor?: { user: { name: string | null; image: string | null } }
 	paybacks?: { amount: number }[]
 	payingBack?: { amount: number }[]
 }
@@ -29,7 +28,17 @@ export const getDebts = async (groupId: number): Promise<DebtDetails[]> => {
 				select: {
 					date: true,
 					description: true,
-					payer: { select: { name: true, image: true, email: true } },
+					payer: {
+						select: {
+							user: {
+								select: {
+									name: true,
+									image: true,
+									email: true,
+								},
+							},
+						},
+					},
 				},
 			},
 			paybacks: { select: { amount: true } },
@@ -37,7 +46,7 @@ export const getDebts = async (groupId: number): Promise<DebtDetails[]> => {
 		},
 		where: {
 			isRepayed: false,
-			debtor: { email: user?.email! },
+			debtor: { user: { email: user?.email! } },
 			expense: { groupId: groupId },
 		},
 	})
@@ -51,7 +60,17 @@ export const getOwnedDebts = async (
 	return await prisma.debt.findMany({
 		select: {
 			amount: true,
-			debtor: { select: { name: true, image: true, email: true } },
+			debtor: {
+				select: {
+					user: {
+						select: {
+							name: true,
+							image: true,
+							email: true,
+						},
+					},
+				},
+			},
 			expense: {
 				select: {
 					date: true,
@@ -63,7 +82,10 @@ export const getOwnedDebts = async (
 		},
 		where: {
 			isRepayed: false,
-			expense: { groupId: groupId, payer: { email: user?.email! } },
+			expense: {
+				groupId: groupId,
+				payer: { user: { email: user?.email! } },
+			},
 		},
 	})
 }
@@ -72,15 +94,16 @@ export const calculateDebts = async (
 	groupId: number,
 	amount: Dinero<number>,
 	payerEmail: string
-): Promise<{ amount: number; debtorId: string }[]> => {
+): Promise<{ amount: number; groupId: number; debtorEmail: string }[]> => {
 	const group = await prisma.group.findUniqueOrThrow({
 		select: {
 			shareMode: true,
 			members: {
 				select: {
-					user: { select: { id: true, email: true } },
+					user: { select: { email: true } },
 					income: true,
 				},
+				where: { enabled: true },
 			},
 		},
 		where: { id: groupId },
@@ -105,9 +128,10 @@ export const calculateDebts = async (
 	const debts = allocate(amount, shares)
 		.filter((amount, index) => debtors[index].user.email !== payerEmail)
 		.map((debtShare, index) => ({
-			debtorId: debtors.filter(
+			groupId,
+			debtorEmail: debtors.filter(
 				(debtor) => debtor.user.email !== payerEmail
-			)[index].user.id,
+			)[index].user.email,
 			amount: toSnapshot(debtShare).amount,
 		}))
 

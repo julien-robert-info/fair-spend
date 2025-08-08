@@ -31,10 +31,11 @@ export const getGroups = async (): Promise<GroupDetails[]> => {
 					isIncomeSet: true,
 					user: { select: { name: true, image: true, email: true } },
 				},
+				where: { enabled: true },
 			},
 		},
 		where: {
-			members: { some: { user: { email: user?.email! } } },
+			members: { some: { user: { email: user?.email! }, enabled: true } },
 		},
 	})
 

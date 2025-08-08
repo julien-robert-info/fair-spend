@@ -53,17 +53,17 @@ test.describe('Debts features', () => {
 						payingBack: true,
 					},
 				},
-				group: { select: { members: true } },
+				payer: { select: { group: { select: { members: true } } } },
 			},
 		})
 
 		expect(expense?.amount).toBe(Math.round(amount * 100))
 		expect(expense?.debts.length).toBe(
-			(expense?.group.members.length ?? 0) - 1
+			(expense?.payer.group.members.length ?? 0) - 1
 		)
 		expense?.debts.map((debt) => {
 			expect(Math.round(debt.amount / 100)).toBeCloseTo(
-				Math.round(amount / expense?.group.members.length),
+				Math.round(amount / expense?.payer.group.members.length),
 				1
 			)
 			expect(debt.isRepayed).toBeFalsy()
@@ -123,9 +123,17 @@ test.describe('Debts features', () => {
 					select: {
 						amount: true,
 						isRepayed: true,
-						debtor: { select: { name: true } },
+						debtor: {
+							select: { user: { select: { name: true } } },
+						},
 						expense: {
-							select: { payer: { select: { name: true } } },
+							select: {
+								payer: {
+									select: {
+										user: { select: { name: true } },
+									},
+								},
+							},
 						},
 					},
 				},
@@ -133,9 +141,19 @@ test.describe('Debts features', () => {
 					select: {
 						amount: true,
 						isRepayed: true,
-						debtor: { select: { name: true } },
+						debtor: {
+							select: {
+								user: { select: { name: true } },
+							},
+						},
 						expense: {
-							select: { payer: { select: { name: true } } },
+							select: {
+								payer: {
+									select: {
+										user: { select: { name: true } },
+									},
+								},
+							},
 						},
 					},
 				},
@@ -158,14 +176,16 @@ test.describe('Debts features', () => {
 				expect(payback.debt.isRepayed).toBeTruthy()
 				expect(payback.counterDebt?.isRepayed).toBeFalsy()
 			}
-			expect(payback.debt.debtor.name).toBe(isMobile ? 'Alice' : 'Bob')
-			expect(payback.debt.expense.payer.name).toBe(
+			expect(payback.debt.debtor.user.name).toBe(
+				isMobile ? 'Alice' : 'Bob'
+			)
+			expect(payback.debt.expense.payer.user.name).toBe(
 				isMobile ? 'Bob' : 'Alice'
 			)
-			expect(payback.counterDebt?.debtor.name).toBe(
+			expect(payback.counterDebt?.debtor.user.name).toBe(
 				isMobile ? 'Bob' : 'Alice'
 			)
-			expect(payback.counterDebt?.expense.payer.name).toBe(
+			expect(payback.counterDebt?.expense.payer.user.name).toBe(
 				isMobile ? 'Alice' : 'Bob'
 			)
 		})
@@ -223,9 +243,17 @@ test.describe('Debts features', () => {
 					select: {
 						amount: true,
 						isRepayed: true,
-						debtor: { select: { name: true } },
+						debtor: {
+							select: { user: { select: { name: true } } },
+						},
 						expense: {
-							select: { payer: { select: { name: true } } },
+							select: {
+								payer: {
+									select: {
+										user: { select: { name: true } },
+									},
+								},
+							},
 						},
 					},
 				},
@@ -233,8 +261,16 @@ test.describe('Debts features', () => {
 					select: {
 						amount: true,
 						isConsumed: true,
-						receiver: { select: { name: true } },
-						sender: { select: { name: true } },
+						receiver: {
+							select: {
+								user: { select: { name: true } },
+							},
+						},
+						sender: {
+							select: {
+								user: { select: { name: true } },
+							},
+						},
 					},
 				},
 			},
@@ -251,14 +287,16 @@ test.describe('Debts features', () => {
 			)
 			expect(payback.debt.isRepayed).toBeTruthy()
 			expect(payback.transfer?.isConsumed).toBeTruthy()
-			expect(payback.debt.debtor.name).toBe(isMobile ? 'Alice' : 'Bob')
-			expect(payback.debt.expense.payer.name).toBe(
+			expect(payback.debt.debtor.user.name).toBe(
+				isMobile ? 'Alice' : 'Bob'
+			)
+			expect(payback.debt.expense.payer.user.name).toBe(
 				isMobile ? 'Bob' : 'Alice'
 			)
-			expect(payback.transfer?.receiver.name).toBe(
+			expect(payback.transfer?.receiver.user.name).toBe(
 				isMobile ? 'Bob' : 'Alice'
 			)
-			expect(payback.transfer?.sender.name).toBe(
+			expect(payback.transfer?.sender.user.name).toBe(
 				isMobile ? 'Alice' : 'Bob'
 			)
 		})
@@ -348,7 +386,7 @@ test.describe('Debts features', () => {
 					select: { amount: true },
 				},
 			},
-			where: { debtor: { name: { in: ['Alice', 'Bob'] } } },
+			where: { debtor: { user: { name: { in: ['Alice', 'Bob'] } } } },
 		})
 
 		debts.map((debt) => {
@@ -394,8 +432,12 @@ test.describe('Debts features', () => {
 			select: {
 				amount: true,
 				isRepayed: true,
-				debtor: { select: { name: true } },
-				expense: { select: { payer: { select: { name: true } } } },
+				debtor: { select: { user: { select: { name: true } } } },
+				expense: {
+					select: {
+						payer: { select: { user: { select: { name: true } } } },
+					},
+				},
 				paybacks: {
 					select: {
 						amount: true,
@@ -405,11 +447,10 @@ test.describe('Debts features', () => {
 					select: { amount: true },
 				},
 			},
-			where: { debtor: { name: { in: ['Alice', 'Bob'] } } },
+			where: { debtor: { user: { name: { in: ['Alice', 'Bob'] } } } },
 		})
 
 		debts.map(async (debt) => {
-			console.log(debt)
 			expect(debt.isRepayed).toBeFalsy()
 			expect(debt.paybacks).toHaveLength(0)
 			expect(debt.payingBack).toHaveLength(0)

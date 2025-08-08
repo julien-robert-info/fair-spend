@@ -134,15 +134,15 @@ export const DebtHistory: React.FC<DebtHistoryProps> = ({
 						>
 							{item.hType === 'expense' ? (
 								<>
-									<UserAvatar user={item.payer} />
+									<UserAvatar user={item.payer.user} />
 									<Typography>{item.description}</Typography>
 									<Typography>{item.amount}€</Typography>
 								</>
 							) : (
 								<>
-									<UserAvatar user={item.sender} />
+									<UserAvatar user={item.sender.user} />
 									<Typography>{item.amount}€ à</Typography>
-									<UserAvatar user={item.receiver} />
+									<UserAvatar user={item.receiver.user} />
 								</>
 							)}
 							<Typography sx={{ flexGrow: 1, textAlign: 'end' }}>
@@ -235,6 +235,7 @@ export const DebtHistory: React.FC<DebtHistoryProps> = ({
 															<UserAvatar
 																user={
 																	debt.debtor
+																		.user
 																}
 															/>
 														</ListItemAvatar>
@@ -288,6 +289,7 @@ export const DebtHistory: React.FC<DebtHistoryProps> = ({
 																		.debt
 																		.expense
 																		.payer
+																		.user
 																}
 															/>
 														</ListItemAvatar>
