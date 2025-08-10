@@ -136,18 +136,27 @@ export const DebtHistory: React.FC<DebtHistoryProps> = ({
 								<>
 									<UserAvatar user={item.payer.user} />
 									<Typography>{item.description}</Typography>
-									<Typography>{item.amount}€</Typography>
+									<Typography
+										sx={{ flexGrow: 1, textAlign: 'end' }}
+									>
+										{item.amount}€
+									</Typography>
+									<Typography>
+										({item.date.toLocaleDateString()})
+									</Typography>
 								</>
 							) : (
 								<>
 									<UserAvatar user={item.sender.user} />
 									<Typography>{item.amount}€ à</Typography>
 									<UserAvatar user={item.receiver.user} />
+									<Typography
+										sx={{ flexGrow: 1, textAlign: 'end' }}
+									>
+										({item.date.toLocaleDateString()})
+									</Typography>
 								</>
 							)}
-							<Typography sx={{ flexGrow: 1, textAlign: 'end' }}>
-								({item.date.toLocaleDateString()})
-							</Typography>
 						</Stack>
 					</AccordionSummary>
 					<AccordionDetails>

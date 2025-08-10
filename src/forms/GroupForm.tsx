@@ -49,6 +49,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialValues, onSuccess }) => {
 				<InputLabel id='mode-label'>Mode de répartition</InputLabel>
 				<Select
 					labelId='mode-label'
+					label='Mode de répartition'
 					name='shareMode'
 					value={mode}
 					onChange={handleChange}

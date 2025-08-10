@@ -43,6 +43,7 @@ const TransferGroupForm: React.FC<TransferGroupFormProps> = ({
 				</InputLabel>
 				<Select
 					labelId='new-owner-label'
+					label='Nouveau propriétaire'
 					name='newOwner'
 					value={newOwner}
 					onChange={handleChange}

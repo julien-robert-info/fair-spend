@@ -48,46 +48,49 @@ export const DebtSummary = ({ group }: { group: GroupDetails }) => {
 			{data && (
 				<>
 					<Typography>{`Solde : ${data.balance}€`}</Typography>
-					<List>
-						{data.debtList.map((debt) => (
-							<ListItem
-								key={debt.user?.name}
-								{...(debt.isNegative && {
-									secondaryAction: (
-										<IconButton
-											onClick={() => {
-												setFormValues({
-													amount: debt.amount,
-													receiver: debt.user?.email!,
-												})
-												setOpenForm(true)
-											}}
-											edge='end'
-											aria-label='payback'
-										>
-											<PointOfSaleIcon />
-										</IconButton>
-									),
-								})}
-								sx={{
-									bgcolor: debt.isNegative
-										? 'error.light'
-										: 'success.light',
-								}}
-							>
-								<ListItemAvatar>
-									<UserAvatar user={debt.user} />
-								</ListItemAvatar>
-								<ListItemText
-									primary={
-										debt.isNegative
-											? `vous devez ${debt.amount}€ à ${debt.user?.name}`
-											: `${debt.user?.name} vous doit ${debt.amount}€`
-									}
-								/>
-							</ListItem>
-						))}
-					</List>
+					{data.debtList.length > 0 && (
+						<List>
+							{data.debtList.map((debt) => (
+								<ListItem
+									key={debt.user?.name}
+									{...(debt.isNegative && {
+										secondaryAction: (
+											<IconButton
+												onClick={() => {
+													setFormValues({
+														amount: debt.amount,
+														receiver:
+															debt.user?.email!,
+													})
+													setOpenForm(true)
+												}}
+												edge='end'
+												aria-label='payback'
+											>
+												<PointOfSaleIcon />
+											</IconButton>
+										),
+									})}
+									sx={{
+										bgcolor: debt.isNegative
+											? 'error.light'
+											: 'success.light',
+									}}
+								>
+									<ListItemAvatar>
+										<UserAvatar user={debt.user} />
+									</ListItemAvatar>
+									<ListItemText
+										primary={
+											debt.isNegative
+												? `vous devez ${debt.amount}€ à ${debt.user?.name}`
+												: `${debt.user?.name} vous doit ${debt.amount}€`
+										}
+									/>
+								</ListItem>
+							))}
+						</List>
+					)}
 				</>
 			)}
 			<Dialog open={openForm} onClose={() => setOpenForm(false)}>

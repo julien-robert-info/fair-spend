@@ -64,8 +64,7 @@ const DebtsPanel = ({
 	return (
 		<Paper
 			sx={{
-				position: 'relative',
-				// minHeight: '10em',
+				minHeight: '7em',
 				width: isDesktop ? '46.5vw' : '97vw',
 				my: 2,
 				mx: isDesktop ? 1 : 'auto',
@@ -88,9 +87,9 @@ const DebtsPanel = ({
 									</InputLabel>
 									<Select
 										labelId='period-select-label'
+										label='Période'
 										value={historyPeriod.toString()}
 										onChange={handleChangePeriod}
-										label='Période'
 									>
 										{Object.keys(HistoryPeriod)
 											.filter(
@@ -134,14 +133,16 @@ const DebtsPanel = ({
 						)}
 						<GroupMenu group={group} />
 					</Stack>
-					{tab === 0 ? (
-						<DebtSummary group={group} />
-					) : (
-						<DebtHistory
-							group={group}
-							historyPeriod={historyPeriod}
-						/>
-					)}
+					<Box sx={{ position: 'relative' }}>
+						{tab === 0 ? (
+							<DebtSummary group={group} />
+						) : (
+							<DebtHistory
+								group={group}
+								historyPeriod={historyPeriod}
+							/>
+						)}
+					</Box>
 					<Dialog open={openForm} onClose={() => setOpenForm(false)}>
 						<DialogTitle>Saisir votre revenu mensuel</DialogTitle>
 						<DialogContent>

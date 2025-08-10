@@ -112,8 +112,14 @@ const createExpenses = async (groups: number[]) => {
 					amount,
 					description: randProductCategory(),
 					date: randPastDate(),
-					group: { connect: { id: group } },
-					payer: { connect: { email: payer.email } },
+					payer: {
+						connect: {
+							groupId_userEmail: {
+								groupId: group,
+								userEmail: payer.email,
+							},
+						},
+					},
 					debts: {
 						createMany: {
 							data: await calculateDebts(
@@ -129,14 +135,21 @@ const createExpenses = async (groups: number[]) => {
 					description: true,
 					date: true,
 					groupId: true,
-					payerId: true,
-					payer: { select: { name: true, image: true } },
+					payer: {
+						select: {
+							user: { select: { name: true, image: true } },
+						},
+					},
 					debts: {
 						select: {
 							id: true,
 							amount: true,
 							isRepayed: true,
-							debtor: { select: { email: true } },
+							debtor: {
+								select: {
+									user: { select: { email: true } },
+								},
+							},
 						},
 					},
 				},
@@ -150,7 +163,7 @@ const createExpenses = async (groups: number[]) => {
 						group,
 						debt.amount,
 						payer.email,
-						debt.debtor.email,
+						debt.debtor.user.email,
 						debt.id
 					)),
 				]

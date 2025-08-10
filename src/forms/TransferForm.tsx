@@ -65,6 +65,7 @@ const TransferForm: React.FC<TransferFormProps> = ({
 				<InputLabel id='receiver-label'>Réceptionnaire</InputLabel>
 				<Select
 					labelId='receiver-label'
+					label='Réceptionnaire'
 					name='receiver'
 					value={receiver}
 					onChange={handleChange}
