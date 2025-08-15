@@ -26,6 +26,13 @@ const GroupStack: React.FC<GroupDashboardProps> = ({
 	setCurrentGroup,
 	handleOpenForm,
 }) => {
+	React.useEffect(() => {
+		if (groups.length > 0) {
+			setCurrentGroup(groups[0]?.id)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
+
 	return (
 		<Stack
 			direction='row'

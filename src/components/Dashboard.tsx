@@ -73,7 +73,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 				/>
 			) : (
 				didmount &&
-				(invites.length > 0 || groups.length > 0) && (
+				invites.length + groups.length > 0 && (
 					<GroupCarousel
 						groups={groups}
 						invites={invites}
@@ -82,7 +82,7 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 					/>
 				)
 			)}
-			{invites.length === 0 && groups.length === 0 && (
+			{invites.length + groups.length === 0 && (
 				<Paper
 					sx={{
 						position: 'relative',

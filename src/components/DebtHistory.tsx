@@ -75,10 +75,10 @@ export const DebtHistory: React.FC<DebtHistoryProps> = ({
 
 	const handleOpenConfirm = (hType: HType, itemId: number) => {
 		if (hType === 'transfer') {
-			setConfirmText('Souhaitez vous supprimer ce budget partagé')
+			setConfirmText('Souhaitez vous supprimer ce transfert')
 			setConfirmAction(() => () => handleDeleteTransfer(itemId))
 		} else {
-			setConfirmText('Souhaitez vous supprimer ce budget partagé')
+			setConfirmText('Souhaitez vous supprimer cette dépense')
 			setConfirmAction(() => () => handleDeleteExpense(itemId))
 		}
 		setConfirmError(undefined)

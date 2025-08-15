@@ -48,6 +48,7 @@ const GroupCarousel: React.FC<Omit<GroupDashboardProps, 'handleOpenForm'>> = ({
 			animation='slide'
 			navButtonsAlwaysVisible={true}
 			cycleNavigation={false}
+			indicators={invites.length + groups.length > 1}
 		>
 			{...[
 				...invites.map((invite) => (

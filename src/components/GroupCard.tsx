@@ -15,6 +15,7 @@ import AddCardRoundedIcon from '@mui/icons-material/AddCardRounded'
 import GroupCardContent from './GroupCardContent'
 import { GroupDetails } from '@/actions/group'
 import ExpenseForm from '@/forms/ExpenseForm'
+import { ShareMode } from '@prisma/client'
 
 const GroupCard = ({
 	group,
@@ -43,8 +44,15 @@ const GroupCard = ({
 								aria-label='add_expense'
 								onClick={() => setOpenForm(true)}
 								size='large'
+								disabled={
+									group.members.length === 1 ||
+									(group.shareMode === ShareMode.FAIR &&
+										group.members.some(
+											(member) => !member.isIncomeSet
+										))
+								}
 							>
-								<AddCardRoundedIcon />
+								<AddCardRoundedIcon fontSize='inherit' />
 							</IconButton>
 						</Grid>
 					</Grid>

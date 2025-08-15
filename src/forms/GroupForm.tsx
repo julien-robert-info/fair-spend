@@ -1,6 +1,7 @@
 'use client'
 import React from 'react'
 import {
+	Alert,
 	Button,
 	FormControl,
 	InputLabel,
@@ -62,6 +63,13 @@ const GroupForm: React.FC<GroupFormProps> = ({ initialValues, onSuccess }) => {
 					))}
 				</Select>
 			</FormControl>
+			{mode !== '' && (
+				<Alert severity='info'>
+					{mode === ShareMode.FAIR
+						? 'Les dépenses sont réparties équitablement entre chaque membre'
+						: 'Les dépenses sont réparties en fontcion du niveau de revenu de chaque membre'}
+				</Alert>
+			)}
 			<Button type='submit'>Enregistrer</Button>
 		</Form>
 	)

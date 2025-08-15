@@ -1,6 +1,7 @@
 'use client'
 import React from 'react'
 import {
+	Alert,
 	Box,
 	Dialog,
 	DialogContent,
@@ -13,6 +14,7 @@ import {
 	Select,
 	SelectChangeEvent,
 	Stack,
+	Typography,
 } from '@mui/material'
 import SettingsIcon from '@mui/icons-material/Settings'
 import HistoryIcon from '@mui/icons-material/History'
@@ -134,13 +136,30 @@ const DebtsPanel = ({
 						<GroupMenu group={group} />
 					</Stack>
 					<Box sx={{ position: 'relative' }}>
-						{tab === 0 ? (
-							<DebtSummary group={group} />
+						{group.shareMode === ShareMode.FAIR &&
+							group.members.some(
+								(member) => member.isIncomeSet === false
+							) && (
+								<Alert severity='error' sx={{ mb: 2 }}>
+									Dans un budget équitable, chaque membre doit
+									saisir son revenu mensuel pour calculer la
+									répartition des dépenses.
+								</Alert>
+							)}
+						{group.members.length > 1 ? (
+							tab === 0 ? (
+								<DebtSummary group={group} />
+							) : (
+								<DebtHistory
+									group={group}
+									historyPeriod={historyPeriod}
+								/>
+							)
 						) : (
-							<DebtHistory
-								group={group}
-								historyPeriod={historyPeriod}
-							/>
+							<Typography>
+								Invitez des membres avant de créer une dépense
+								partagée
+							</Typography>
 						)}
 					</Box>
 					<Dialog open={openForm} onClose={() => setOpenForm(false)}>
