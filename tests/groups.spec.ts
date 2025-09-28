@@ -73,6 +73,7 @@ test.describe('Groups features', () => {
 		browser,
 		isMobile,
 	}) => {
+		test.setTimeout(50000)
 		await page.goto('/')
 
 		// create

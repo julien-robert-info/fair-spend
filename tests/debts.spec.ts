@@ -308,9 +308,9 @@ test.describe('Debts features', () => {
 		isMobile,
 	}) => {
 		const groupCard = page.locator('.MuiCard-root').first()
-		const historyButton = page.getByRole('button', { name: 'history' })
-		const historyCloseButton = page.getByRole('button', {
-			name: 'history-close',
+		const historyTabButton = page.getByRole('tab', { name: 'historique' })
+		const summaryTabButton = page.getByRole('tab', {
+			name: 'solde',
 		})
 		const expenseHistory = page.getByRole('button', {
 			name: `${isMobile ? 'Alice' : 'Bob'} test`,
@@ -412,7 +412,7 @@ test.describe('Debts features', () => {
 			}
 		})
 
-		await historyButton.click()
+		await historyTabButton.click()
 
 		await expect(expenseHistory).toBeVisible()
 		await expenseHistory.click()
@@ -422,7 +422,7 @@ test.describe('Debts features', () => {
 		await consfirmButton.click()
 
 		await expect(expenseHistory).toBeHidden()
-		await historyCloseButton.click()
+		await summaryTabButton.click()
 
 		await expect(
 			page.getByText(/[Bob|Alice] vous doit \d+\.\d+€/)
@@ -463,10 +463,10 @@ test.describe('Debts features', () => {
 		isMobile,
 	}) => {
 		const groupCard = page.locator('.MuiCard-root').first()
-		const historyButton = page.getByRole('button', {
+		const historyTabButton = page.getByRole('button', {
 			name: 'history',
 		})
-		const historyCloseButton = page.getByRole('button', {
+		const summaryTabButton = page.getByRole('button', {
 			name: 'history-close',
 		})
 		const transferHistory = page.getByRole('button', {
@@ -487,15 +487,12 @@ test.describe('Debts features', () => {
 				: 'playwright/.auth/alice.json',
 		})
 		const secondUserPage = await secondUserContext.newPage()
-		const secondUserHistoryButton = secondUserPage.getByRole('button', {
-			name: 'history',
+		const secondUserHistoryTabButton = secondUserPage.getByRole('tab', {
+			name: 'historique',
 		})
-		const secondUserHistoryCloseButton = secondUserPage.getByRole(
-			'button',
-			{
-				name: 'history-close',
-			}
-		)
+		const secondUserSummaryTabButton = secondUserPage.getByRole('tab', {
+			name: 'solde',
+		})
 		const expenseHistory = secondUserPage.getByRole('button', {
 			name: `${isMobile ? 'Bob' : 'Alice'} test`,
 		})
@@ -547,7 +544,7 @@ test.describe('Debts features', () => {
 		expect(paybacks.length).toBe(1)
 		expect(paybacks[0].debt.isRepayed).toBeTruthy()
 
-		await secondUserHistoryButton.click()
+		await secondUserHistoryTabButton.click()
 
 		// Second user delete expense
 		await expect(expenseHistory).toBeVisible()
@@ -558,7 +555,7 @@ test.describe('Debts features', () => {
 		await secondUserConsfirmButton.click()
 
 		await expect(expenseHistory).toBeHidden()
-		await secondUserHistoryCloseButton.click()
+		await secondUserSummaryTabButton.click()
 
 		await expect(secondUserRepayButton).toBeVisible()
 
@@ -593,7 +590,7 @@ test.describe('Debts features', () => {
 		expect(paybacks.length).toBe(1)
 		expect(paybacks[0].debt.isRepayed).toBeTruthy()
 
-		await historyButton.click()
+		await historyTabButton.click()
 		await expect(transferHistory).toBeVisible()
 		await transferHistory.click()
 		await expect(deleteTransferButton).toBeVisible()
@@ -603,7 +600,7 @@ test.describe('Debts features', () => {
 
 		await expect(transferHistory).toBeHidden()
 
-		await historyCloseButton.click()
+		await summaryTabButton.click()
 		await expect(repayButton).toBeVisible()
 	})
 })

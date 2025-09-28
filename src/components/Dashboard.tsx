@@ -17,7 +17,7 @@ import { InviteDetail } from '@/actions/invite'
 import GroupStack from './GroupStack'
 import GroupForm from '@/forms/GroupForm'
 import GroupCarousel from './GroupCarousel'
-import DebtsPanel from './DebtsPanel'
+import GroupPanelWrapper from './Panels/GroupPanelWrapper'
 
 export type DashboardProps = {
 	groups: GroupDetails[]
@@ -98,7 +98,10 @@ const Dashboard: React.FC<DashboardProps> = ({ groups, invites }) => {
 					</Typography>
 				</Paper>
 			)}
-			<DebtsPanel group={currentGroupDetails} isDesktop={isDesktop} />
+			<GroupPanelWrapper
+				group={currentGroupDetails}
+				isDesktop={isDesktop}
+			/>
 			<Dialog open={openForm} onClose={() => setOpenForm(false)}>
 				<DialogTitle>Nouveau budget partagé</DialogTitle>
 				<DialogContent>

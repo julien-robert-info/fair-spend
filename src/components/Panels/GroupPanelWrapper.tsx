@@ -14,24 +14,25 @@ import {
 	Select,
 	SelectChangeEvent,
 	Stack,
+	Tab,
+	Tabs,
 	Typography,
 } from '@mui/material'
 import SettingsIcon from '@mui/icons-material/Settings'
-import HistoryIcon from '@mui/icons-material/History'
-import CloseIcon from '@mui/icons-material/Close'
 import { dinero } from 'dinero.js'
 import { USD } from '@dinero.js/currencies'
 import { GroupDetails } from '@/actions/group'
 import { ShareMode } from '@prisma/client'
 import IncomeForm from '@/forms/IncomeForm'
 import { getIncome } from '@/actions/member'
-import { DebtSummary } from '@/components/DebtSummary'
-import { DebtHistory } from '@/components/DebtHistory'
-import GroupMenu from './GroupMenu'
+import { SummaryPanel } from '@/components/Panels/SummaryPanel'
+import { HistoryPanel } from '@/components/Panels/HistoryPanel'
+import GroupMenu from '../GroupMenu'
 import { dineroFormat } from '@/utils/dinero'
 import { HistoryPeriod } from '@/utils/history'
+import TabPanel from '../TabPanel'
 
-const DebtsPanel = ({
+const GroupPanelWrapper = ({
 	group,
 	isDesktop,
 }: {
@@ -79,36 +80,58 @@ const DebtsPanel = ({
 						direction='row'
 						justifyContent='end'
 						alignItems='center'
+						gap={1}
 						sx={{ mb: 1 }}
 					>
-						{tab === 1 && (
-							<Box sx={{ flexGrow: 1 }}>
-								<FormControl size='small'>
-									<InputLabel id='period-select-label'>
-										Période
-									</InputLabel>
-									<Select
-										labelId='period-select-label'
-										label='Période'
-										value={historyPeriod.toString()}
-										onChange={handleChangePeriod}
+						{group.members.length > 1 && (
+							<>
+								<Box sx={{ opacity: tab === 1 ? 1 : 0 }}>
+									<FormControl
+										size='small'
+										disabled={tab !== 1}
 									>
-										{Object.keys(HistoryPeriod)
-											.filter(
-												(key) => !isNaN(Number(key))
-											)
-											.map((key) => (
-												<MenuItem value={key} key={key}>
-													{
-														HistoryPeriod[
-															key as keyof typeof HistoryPeriod
-														]
-													}
-												</MenuItem>
-											))}
-									</Select>
-								</FormControl>
-							</Box>
+										<InputLabel id='period-select-label'>
+											Période
+										</InputLabel>
+										<Select
+											labelId='period-select-label'
+											label='Période'
+											value={historyPeriod.toString()}
+											onChange={handleChangePeriod}
+										>
+											{Object.keys(HistoryPeriod)
+												.filter(
+													(key) => !isNaN(Number(key))
+												)
+												.map((key) => (
+													<MenuItem
+														value={key}
+														key={key}
+													>
+														{
+															HistoryPeriod[
+																key as keyof typeof HistoryPeriod
+															]
+														}
+													</MenuItem>
+												))}
+										</Select>
+									</FormControl>
+								</Box>
+								<Tabs
+									value={tab}
+									onChange={(event, value) => setTab(value)}
+									textColor='secondary'
+									indicatorColor='secondary'
+									aria-label='group-tab'
+									variant='scrollable'
+									scrollButtons='auto'
+									sx={{ flexGrow: 1 }}
+								>
+									<Tab value={0} label='Solde' />
+									<Tab value={1} label='Historique' />
+								</Tabs>
+							</>
 						)}
 						{group.shareMode === ShareMode.FAIR && (
 							<IconButton
@@ -116,21 +139,6 @@ const DebtsPanel = ({
 								onClick={() => handleOpenForm()}
 							>
 								<SettingsIcon />
-							</IconButton>
-						)}
-						{tab === 0 ? (
-							<IconButton
-								aria-label='history'
-								onClick={() => setTab(1)}
-							>
-								<HistoryIcon />
-							</IconButton>
-						) : (
-							<IconButton
-								aria-label='history-close'
-								onClick={() => setTab(0)}
-							>
-								<CloseIcon />
 							</IconButton>
 						)}
 						<GroupMenu group={group} />
@@ -147,14 +155,17 @@ const DebtsPanel = ({
 								</Alert>
 							)}
 						{group.members.length > 1 ? (
-							tab === 0 ? (
-								<DebtSummary group={group} />
-							) : (
-								<DebtHistory
-									group={group}
-									historyPeriod={historyPeriod}
-								/>
-							)
+							<>
+								<TabPanel value={tab} index={0}>
+									<SummaryPanel group={group} />
+								</TabPanel>
+								<TabPanel value={tab} index={1}>
+									<HistoryPanel
+										group={group}
+										historyPeriod={historyPeriod}
+									/>
+								</TabPanel>
+							</>
 						) : (
 							<Typography>
 								Invitez des membres avant de créer une dépense
@@ -180,4 +191,4 @@ const DebtsPanel = ({
 	)
 }
 
-export default DebtsPanel
+export default GroupPanelWrapper

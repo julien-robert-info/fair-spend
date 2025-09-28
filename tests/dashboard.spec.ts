@@ -26,7 +26,7 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 	if (isMobile) {
 		await swipeToLocator(page, equitableModeCard)
 	} else {
-		equitableModeCard.click()
+		await equitableModeCard.click()
 	}
 
 	await expect(menuButton).toBeVisible()
@@ -36,7 +36,7 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 	if (isMobile) {
 		await swipeToLocator(page, fairModeCard)
 	} else {
-		fairModeCard.click()
+		await fairModeCard.click()
 	}
 
 	await expect(menuButton).toBeVisible()

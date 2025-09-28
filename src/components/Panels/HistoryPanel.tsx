@@ -30,17 +30,17 @@ import {
 	HistoryPeriod,
 	getHistoryData,
 } from '@/utils/history'
-import UserAvatar from './UserAvatar'
+import UserAvatar from '../UserAvatar'
 import { deleteExpense } from '@/actions/expense'
 import { deleteTransfer } from '@/actions/transfer'
-import Loader from './Loader'
+import Loader from '../Loader'
 
-type DebtHistoryProps = {
+type HistoryPanelProps = {
 	group: GroupDetails
 	historyPeriod: HistoryPeriod
 }
 
-export const DebtHistory: React.FC<DebtHistoryProps> = ({
+export const HistoryPanel: React.FC<HistoryPanelProps> = ({
 	group,
 	historyPeriod,
 }) => {

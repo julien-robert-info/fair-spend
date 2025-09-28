@@ -12,13 +12,13 @@ import {
 	Typography,
 } from '@mui/material'
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale'
-import UserAvatar from './UserAvatar'
+import UserAvatar from '../UserAvatar'
 import TransferForm, { TransferFormProps } from '@/forms/TransferForm'
 import { getPanelData, PanelData } from '@/utils/debt'
 import { GroupDetails } from '@/actions/group'
-import Loader from './Loader'
+import Loader from '../Loader'
 
-export const DebtSummary = ({ group }: { group: GroupDetails }) => {
+export const SummaryPanel = ({ group }: { group: GroupDetails }) => {
 	const [data, setData] = React.useState<PanelData | undefined>()
 	const [openForm, setOpenForm] = React.useState(false)
 	const [formValues, setFormValues] = React.useState<
