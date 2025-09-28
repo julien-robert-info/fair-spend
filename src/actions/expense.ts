@@ -260,13 +260,15 @@ export const deleteExpense = async (expenseId: number) => {
 		//recalculate isRepay for deleted paybacks with counterdebt
 		const debts = await prisma.debt.findMany({
 			select: { id: true },
-			where: { paybacks: { some: { counterDebt: { expenseId } } } },
+			where: {
+				paybacks: { some: { counterDebt: { expenseId: expenseId } } },
+			},
 		})
 
 		//recalculate isconsumed for deleted paybacks with transfer
 		const transfers = await prisma.transfer.findMany({
 			select: { id: true },
-			where: { paybacks: { some: { debt: { expenseId } } } },
+			where: { paybacks: { some: { debt: { expenseId: expenseId } } } },
 		})
 
 		await prisma.expense.delete({
