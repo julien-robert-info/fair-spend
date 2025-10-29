@@ -2,6 +2,7 @@
 import {
 	AvatarGroup,
 	Backdrop,
+	Badge,
 	CardContent,
 	CardContentProps,
 	Tooltip,
@@ -39,22 +40,9 @@ const GroupCardContent = ({
 				</Backdrop>
 			)}
 			{group.shareMode === ShareMode.FAIR ? (
-				<Tooltip
-					title={`${
-						group.members.some((member) => !member.isIncomeSet) &&
-						!isInvite
-							? 'tous les membres doivent définir leur revenu'
-							: 'Mode équitable'
-					}`}
-				>
+				<Tooltip title={'Mode équitable'}>
 					<VolunteerActivismIcon
-						color={
-							group.members.some(
-								(member) => !member.isIncomeSet
-							) && !isInvite
-								? 'error'
-								: 'disabled'
-						}
+						color={'disabled'}
 						sx={{
 							position: 'absolute',
 							right: 16,
@@ -74,12 +62,32 @@ const GroupCardContent = ({
 			</Typography>
 			{group.members.length > 0 ? (
 				<AvatarGroup max={3} sx={{ justifyContent: 'center' }}>
-					{group.members.map((member) => (
-						<UserAvatar
-							key={`${group.id}-${member.user.name}`}
-							user={member.user}
-						/>
-					))}
+					{group.members.map((member) =>
+						group.shareMode !== ShareMode.FAIR ||
+						member.isIncomeSet ? (
+							<UserAvatar
+								key={`${group.id}-${member.user.name}`}
+								user={member.user}
+								sx={{ width: 56, height: 56 }}
+							/>
+						) : (
+							<Badge
+								key={`${group.id}-${member.user.name}`}
+								overlap='circular'
+								anchorOrigin={{
+									vertical: 'bottom',
+									horizontal: 'right',
+								}}
+								variant='dot'
+								color='error'
+							>
+								<UserAvatar
+									user={member.user}
+									sx={{ width: 56, height: 56 }}
+								/>
+							</Badge>
+						)
+					)}
 				</AvatarGroup>
 			) : (
 				<Typography

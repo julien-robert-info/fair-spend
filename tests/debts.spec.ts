@@ -463,11 +463,11 @@ test.describe('Debts features', () => {
 		isMobile,
 	}) => {
 		const groupCard = page.locator('.MuiCard-root').first()
-		const historyTabButton = page.getByRole('button', {
-			name: 'history',
+		const historyTabButton = page.getByRole('tab', {
+			name: 'Historique',
 		})
-		const summaryTabButton = page.getByRole('button', {
-			name: 'history-close',
+		const summaryTabButton = page.getByRole('tab', {
+			name: 'Solde',
 		})
 		const transferHistory = page.getByRole('button', {
 			name: /[Alice|Bob] \d+\.\d+€ à [Alice|Bob]/,

@@ -1,4 +1,4 @@
-const stringToColor = (string: string) => {
+export const stringToColor = (string: string) => {
 	let hash = 0
 	let i
 
@@ -16,16 +16,6 @@ const stringToColor = (string: string) => {
 	/* eslint-enable no-bitwise */
 
 	return color
-}
-
-export const stringAvatar = (name: string) => {
-	return {
-		alt: name,
-		sx: {
-			bgcolor: stringToColor(name),
-		},
-		children: `${name.charAt(0)}`,
-	}
 }
 
 export const shuffleArray = <T>(array: T[]): T[] => {

@@ -105,12 +105,18 @@ export const leaveGroup = async (id: number) => {
 	return { message: 'success' }
 }
 
-export const getIncome = async (groupId: number): Promise<number | null> => {
+export const getIncome = async (
+	groupId: number
+): Promise<{
+	income: number | null
+	updatedAt: Date
+} | null> => {
 	const user = await authOrError()
 
 	const member = await prisma.member.findUnique({
 		select: {
 			income: true,
+			updatedAt: true,
 		},
 		where: {
 			groupId_userEmail: {
@@ -120,7 +126,7 @@ export const getIncome = async (groupId: number): Promise<number | null> => {
 		},
 	})
 
-	return member?.income ?? null
+	return member
 }
 
 export const setIncome: FormAction = async (prevState, formData) => {

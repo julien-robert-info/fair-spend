@@ -3,11 +3,7 @@ import React from 'react'
 import {
 	Alert,
 	Box,
-	Dialog,
-	DialogContent,
-	DialogTitle,
 	FormControl,
-	IconButton,
 	InputLabel,
 	MenuItem,
 	Paper,
@@ -18,17 +14,11 @@ import {
 	Tabs,
 	Typography,
 } from '@mui/material'
-import SettingsIcon from '@mui/icons-material/Settings'
-import { dinero } from 'dinero.js'
-import { USD } from '@dinero.js/currencies'
 import { GroupDetails } from '@/actions/group'
 import { ShareMode } from '@prisma/client'
-import IncomeForm from '@/forms/IncomeForm'
-import { getIncome } from '@/actions/member'
 import { SummaryPanel } from '@/components/Panels/SummaryPanel'
 import { HistoryPanel } from '@/components/Panels/HistoryPanel'
 import GroupMenu from '../GroupMenu'
-import { dineroFormat } from '@/utils/dinero'
 import { HistoryPeriod } from '@/utils/history'
 import TabPanel from '../TabPanel'
 
@@ -40,8 +30,6 @@ const GroupPanelWrapper = ({
 	isDesktop: boolean
 }) => {
 	const [tab, setTab] = React.useState(0)
-	const [openForm, setOpenForm] = React.useState(false)
-	const [income, setIncome] = React.useState('')
 	const [historyPeriod, setHistoryPeriod] = React.useState<HistoryPeriod>(
 		HistoryPeriod['1 mois']
 	)
@@ -52,16 +40,6 @@ const GroupPanelWrapper = ({
 
 	if (!group) {
 		return
-	}
-
-	const handleOpenForm = async () => {
-		const fetchedIncome = await getIncome(group.id)
-		setIncome(
-			dineroFormat(
-				dinero({ amount: fetchedIncome ?? 0, currency: USD })
-			) ?? income
-		)
-		setOpenForm(true)
 	}
 
 	return (
@@ -133,14 +111,6 @@ const GroupPanelWrapper = ({
 								</Tabs>
 							</>
 						)}
-						{group.shareMode === ShareMode.FAIR && (
-							<IconButton
-								aria-label='settings'
-								onClick={() => handleOpenForm()}
-							>
-								<SettingsIcon />
-							</IconButton>
-						)}
 						<GroupMenu group={group} />
 					</Stack>
 					<Box sx={{ position: 'relative' }}>
@@ -173,18 +143,6 @@ const GroupPanelWrapper = ({
 							</Typography>
 						)}
 					</Box>
-					<Dialog open={openForm} onClose={() => setOpenForm(false)}>
-						<DialogTitle>Saisir votre revenu mensuel</DialogTitle>
-						<DialogContent>
-							<IncomeForm
-								initialValues={{
-									groupId: group.id,
-									income: income,
-								}}
-								onSuccess={() => setOpenForm(false)}
-							/>
-						</DialogContent>
-					</Dialog>
 				</>
 			)}
 		</Paper>

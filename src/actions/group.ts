@@ -90,21 +90,12 @@ export const deleteGroup = async (id: number) => {
 		const group = await prisma.group.findUniqueOrThrow({
 			select: {
 				id: true,
-				members: true,
-				owner: true,
 			},
 			where: { id: id, owner: { email: user?.email! } },
 		})
 
-		if (group.members.length > 2) {
-			return {
-				message:
-					'Veuillez tranférer la propriété du group à un autre membre',
-			}
-		}
-
 		await prisma.group.delete({
-			where: { id: id },
+			where: { id: group.id },
 		})
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError) {

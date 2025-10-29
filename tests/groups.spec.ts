@@ -221,30 +221,56 @@ test.describe('Groups features', () => {
 	})
 
 	test('Can set Income on Fair group', async ({ page, isMobile }) => {
-		await page.goto('/')
-
 		const fairModeCard = page
 			.locator('.MuiCard-root')
 			.filter({ has: page.getByTestId('VolunteerActivismIcon') })
 			.first()
-		const settingButton = page.getByRole('button', { name: 'settings' })
-		const incomeFormFields = page.getByLabel('Montant *')
+		const addExpenseButton = fairModeCard.getByRole('button', {
+			name: 'add_expense',
+		})
+		const alert = page.getByRole('alert').first()
+		const setIncomeButton = alert.getByRole('button', { name: 'edit' })
+		const incomeFormFields = page.getByLabel('Montant')
+		const descriptionFormFields = page.getByLabel('Description')
 		const submitButton = page.getByRole('button', { name: 'Enregistrer' })
+
+		await page.goto('/')
 
 		if (isMobile) {
 			await swipeToLocator(page, fairModeCard)
 		} else {
 			fairModeCard.click()
 		}
-		await expect(settingButton).toBeVisible()
+		await expect(addExpenseButton).toBeVisible()
 
 		const income = randNumber({ fraction: 2 }).toString()
 
-		await settingButton.click()
+		await addExpenseButton.click()
+
+		if (await page.getByText('Saisir une dépense').isVisible()) {
+			await expect(alert).toBeVisible()
+			await expect(setIncomeButton).toBeVisible()
+			await setIncomeButton.click()
+		}
+
+		await expect(incomeFormFields).toBeVisible()
+		await expect(descriptionFormFields).toBeHidden()
+		const oldIncome = (await incomeFormFields.inputValue()) ?? income
+
 		await incomeFormFields.fill(income)
 		await submitButton.click()
 
-		await settingButton.click()
-		await expect(incomeFormFields).toHaveValue(income)
+		await expect(alert).toBeVisible()
+		await expect(alert).toHaveText(new RegExp(`[Revenus : ${income}€]`))
+		await expect(setIncomeButton).toBeVisible()
+		await setIncomeButton.click()
+
+		await expect(alert).toBeHidden()
+		await expect(incomeFormFields).toBeVisible()
+		await incomeFormFields.fill(oldIncome)
+		await submitButton.click()
+
+		await expect(alert).toBeVisible()
+		await expect(alert).toHaveText(new RegExp(`[Revenus : ${oldIncome}€]`))
 	})
 })

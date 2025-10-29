@@ -21,7 +21,8 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 		.filter({ has: page.getByTestId('BalanceIcon') })
 		.first()
 	const menuButton = page.getByRole('button', { name: 'menu' })
-	const settingButton = page.getByRole('button', { name: 'settings' })
+	const balanceTab = page.getByRole('tab', { name: 'Solde' })
+	const historyTab = page.getByRole('tab', { name: 'Historique' })
 
 	if (isMobile) {
 		await swipeToLocator(page, equitableModeCard)
@@ -30,7 +31,8 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 	}
 
 	await expect(menuButton).toBeVisible()
-	await expect(settingButton).toBeHidden()
+	await expect(balanceTab).toBeVisible()
+	await expect(historyTab).toBeVisible()
 
 	await page.reload()
 	if (isMobile) {
@@ -40,5 +42,6 @@ test('Show debt panel when select group', async ({ page, isMobile }) => {
 	}
 
 	await expect(menuButton).toBeVisible()
-	await expect(settingButton).toBeVisible()
+	await expect(balanceTab).toBeVisible()
+	await expect(historyTab).toBeVisible()
 })

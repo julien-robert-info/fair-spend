@@ -110,6 +110,8 @@ model Member {
   income  Int?
   enabled Boolean @default(true)
 
+  updatedAt DateTime @default(now()) @updatedAt
+
   expenses         Expense[]
   debts            Debt[]
   transferSended   Transfer[] @relation(name: "transferSender")
